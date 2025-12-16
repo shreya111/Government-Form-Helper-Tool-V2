@@ -50,14 +50,14 @@
 > 
 > **"...each field I click gets instant, intelligent guidance."**
 > 
-> **"For the date of birth, it emphasizes matching my birth certificate exactly."**
+> **"...each field I click gets instant, intelligent guidance."**
 
 ---
 
 ### [0:40 - 0:53] Place of Birth & Dropdowns
 **VISUAL:** Filling Place of Birth (Indore), Marital Status (Single), State (Madhya Pradesh), District (Indore)
 
-> **"FormWise works seamlessly with dropdowns too."**
+> **"...each field I click gets instant, intelligent guidance."**
 > 
 > **"Whether it's your place of birth, marital status, or location details..."**
 > 
