@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 3 covers the new Document Intelligence + Autofill feature end-to-end. Backend: 17/17 pytest cases pass in /app/backend/tests/test_documents_api.py covering auth (/api/auth/me + /logout), upload validation (unsupported type, fake mime signature, empty, oversize, valid PNG), cross-user ownership isolation (user B gets 404 on GET/extracted-data/PATCH/DELETE of user A's document), full extraction pipeline against /tmp/mock_birth.png (processing -> processed, extracted-data returns ontology fields with 0<=confidence<=1 and no fabricated nulls), classification correction (invalid -> 400, valid -> 200), autofill preview (mappings/summary, unmatched labels -> status=missing/value=null, suggested fields carry source_document_type + confidence_level), autofill confirm (ok + filled count + values), and legacy /api/form-help regression. Frontend: seeded session_token cookie on formwise-demo.preview.emergentagent.com and drove /demo: Documents tab -> dropzone visible, processed doc card visible, Review & Autofill screen shows 'FormWise found information for 8 of 13 fields. 5 need your input.' with 8 approve checkboxes + editable values (DOB in DD/MM/YYYY as expected), Apply populates form (given_name='Shreya Singhal', dob='1997-10-11' YYYY-MM-DD, gender='female' via select option value mapping) and shows autofill-result banner ('8 fields populated · 5 fields still need attention'). Chat regression: sending 'What is ECR?' produced bot response bubbles. Field Help regression: focusing input-surname rendered Expert Advice + Important warning within ~5s (apply-recommendation-btn only appears for fields that carry options, so absent on plain input - not a bug). Mock passport page (extension iframe context, docApi.available=false): Documents tab renders the 'Document Autofill — Open the FormWise web demo to upload your documents and autofill this form.' empty state and does not crash.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "passed_tests": [
+    "GET /api/auth/me: 401 without token, 401 with invalid token, 200 with seeded Bearer",
+    "POST /api/auth/logout: 200 and session record removed; subsequent /me -> 401",
+    "POST /api/documents/upload: 401 unauth; 400 for .txt / fake-mime PNG / empty / >10MB with user-friendly detail; 200 for valid PNG",
+    "Ownership: user B receives 404 on GET/extracted-data/PATCH classification/DELETE of user A's doc; user A still 200",
+    "Extraction: mock_birth.png -> processed within 60s; extracted-data returns ontology fields with 0<=confidence<=1 and no null/empty fabricated values",
+    "PATCH /api/documents/{id}/classification: invalid document_type -> 400, valid -> 200",
+    "POST /api/autofill/preview: mappings length == fields length, unmatched label status=missing value=null, suggested fields include source_document_type + confidence_level, summary counts consistent",
+    "POST /api/autofill/confirm: ok=true, filled count and values array match input mappings",
+    "/api/form-help regression: 200 with advice",
+    "Frontend /demo Documents tab: dropzone + processed doc card + Review & Autofill button; review screen shows summary + 8 rows with confidence badges, source labels, editable values; apply produces autofill-result banner",
+    "Frontend field-value mapping: date DD/MM/YYYY -> YYYY-MM-DD (11/10/1997 -> 1997-10-11); gender label 'Female' -> select option value 'female'; text field 'Shreya Singhal' populated in input-given_name",
+    "Frontend Chat regression: send + receive bubbles rendered",
+    "Frontend Field Help regression: focus input-surname -> Expert Advice + Important warning rendered",
+    "/mock-passport.html (docApi.available=false): Documents tab shows 'Document Autofill — Open the FormWise web demo…' fallback and does not crash"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_documents_api.py",
+    "/app/backend/tests/test_formwise_api.py",
+    "/app/test_reports/pytest/documents_api.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "doc_router.py /documents/upload accepts UploadFile but reads the full body into memory before size check; for very large uploads Kubernetes ingress may accept it before the 400. Consider streaming or setting a proxy-level max-body-size to reject early. Not a correctness issue.",
+    "auth.py POST /api/auth/logout only deletes the session when cookie is present (request.cookies['session_token']). If a client is Bearer-only (like the frontend axios calls to /api/documents/*) and calls logout, the DB record is not removed. Bearer path is used only by tests here, but consider unifying with _token_from_request for consistency.",
+    "doc_services.GeminiExtractionService.classify_and_extract may raise if the model returns non-JSON; _parse_json only strips ```json fences. A malformed response will surface as a generic 'we couldn't read this document' via the except in _process, which is acceptable UX but the raw parse error is logged only as type name.",
+    "DocumentsTab.jsx CONSENT_KEY is stored in localStorage globally, so consent survives sign-out and applies to any user on the same browser. Consider scoping to user_id for shared devices.",
+    "FormSimulator.applyAutofill date regex accepts both / and - separators - fine. For select 'gender' it lowercases both option.label and value; safe. Good."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_documents_api.py"
+  ],
+  "success_rate": {"backend": "100% (17/17 documents + 6/6 legacy)", "frontend": "100% of tested flows"},
+  "test_credentials": "Seeded via /app/memory/test_credentials.md mongosh snippet. UI test used session_token='ui_session_1789385958252' (cleaned up). Backend pytest seeds+cleans users A/B and a throwaway logout user per session.",
+  "seed_data_creation": "Backend fixtures seed two users (A, B) via pymongo and delete them + their documents in teardown. UI test seeded one user + uploaded /tmp/mock_birth.png via curl before the browser run; cleaned up after.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend tests live at /app/backend/tests/test_documents_api.py (uses pymongo + fresh session per fixture) and /app/backend/tests/test_formwise_api.py (legacy). Seed template in /app/memory/test_credentials.md. For UI: set cookie session_token on domain formwise-demo.preview.emergentagent.com (secure, sameSite=None, httpOnly=True) before navigating. Gemini extraction on /tmp/mock_birth.png finishes in ~2-6s consistently; poll GET /api/documents/{id} with ~2s cadence. Field Help apply-recommendation-btn is only rendered for fields that expose options (selects); plain inputs receive only the advice/warning card so don't gate regression tests on that button. Chat send-button selector uses generic 'button[type=submit]' fallback; consider adding data-testid='chat-send-btn'.",
+  "rca of the issue": "N/A - no defects found."
+}

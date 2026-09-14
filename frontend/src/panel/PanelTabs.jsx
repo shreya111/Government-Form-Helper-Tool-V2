@@ -1,7 +1,8 @@
-import { Circle, MessageSquare } from "lucide-react";
+import { Circle, MessageSquare, FileText } from "lucide-react";
 
 const TABS = [
   { id: "field-help", label: "Field Help", Icon: Circle },
+  { id: "documents", label: "Documents", Icon: FileText },
   { id: "chat", label: "Chat", Icon: MessageSquare },
 ];
 

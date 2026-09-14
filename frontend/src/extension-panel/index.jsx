@@ -5,7 +5,7 @@ import { HelperPanel } from "../panel/HelperPanel";
 import "./panel.css";
 
 // Real extension: chrome.runtime.id exists. Mock page: fall back to the dev shim on the parent window.
-const ext = () => (typeof chrome !== "undefined" && chrome.runtime?.id ? chrome : window.parent.chrome);
+const ext = () => (typeof window.chrome !== "undefined" && window.chrome.runtime?.id ? window.chrome : window.parent.chrome);
 const post = (msg) => window.parent.postMessage({ source: "formwise-panel", ...msg }, "*");
 
 const useParentMessages = (handler) => {
@@ -139,6 +139,7 @@ const ExtensionPanel = () => {
       progress={progress}
       fieldOptions={field?.options}
       onApply={(value) => post({ type: "FW_APPLY", value })}
+      docApi={{ available: false }}
       chatMessages={chatMessages}
       onChatMessagesChange={persistChat}
       onSendChat={sendChat}

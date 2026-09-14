@@ -3,6 +3,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { FileText, Download, ArrowLeft, Sparkles, Info } from "lucide-react";
 import { HelperPanel } from "../panel/HelperPanel";
+import { webDocApi } from "../lib/docApi";
+import { AuthButton } from "../components/AuthButton";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -52,6 +54,16 @@ const SECTIONS = [
 ];
 
 const ALL_FIELDS = SECTIONS.flatMap((s) => s.fields.map((f) => ({ ...f, section: s.title })));
+
+// Field specs sent to the autofill mapping endpoint.
+const AUTOFILL_FIELDS = ALL_FIELDS.map((f) => ({
+  field_id: f.name,
+  label: f.label,
+  type: f.type === "select" ? "select" : f.type === "date" ? "date" : "input",
+  required: true,
+  section: f.section,
+  options: (f.options || []).map((o) => o.label),
+}));
 
 const inputClass = (isActive) =>
   `w-full bg-white/5 backdrop-blur-sm border rounded-xl px-4 py-3 text-sm text-white placeholder:text-white/30 focus:outline-none transition-colors ${
@@ -109,7 +121,7 @@ const FormSimulator = () => {
   const [activeField, setActiveField] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState(null);
-  const [isPanelVisible, setIsPanelVisible] = useState(false);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [error, setError] = useState(null);
   const [values, setValues] = useState({});
   const [chatMessages, setChatMessages] = useState([]);
@@ -177,6 +189,28 @@ const FormSimulator = () => {
     setTimeout(() => el.focus({ preventScroll: true }), 250);
   };
 
+  // Apply approved document values to the form (maps select labels -> option values, DD/MM/YYYY -> date input).
+  const applyAutofill = (items) => {
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const { field_id, value } of items) {
+        const f = ALL_FIELDS.find((x) => x.name === field_id);
+        if (f?.type === "select" && f.options) {
+          const opt = f.options.find(
+            (o) => o.label.toLowerCase() === String(value).toLowerCase() || o.value.toLowerCase() === String(value).toLowerCase()
+          );
+          next[field_id] = opt ? opt.value : value;
+        } else if (f?.type === "date") {
+          const m = String(value).match(/(\d{1,2})[/-](\d{1,2})[/-](\d{4})/);
+          next[field_id] = m ? `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}` : value;
+        } else {
+          next[field_id] = value;
+        }
+      }
+      return next;
+    });
+  };
+
   const missing = ALL_FIELDS.filter((f) => !values[f.name]);
   const progress = {
     total: ALL_FIELDS.length,
@@ -208,6 +242,7 @@ const FormSimulator = () => {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <AuthButton />
             <a
               href="/mock-passport.html"
               className="hidden sm:flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-full text-sm text-white/80 hover:bg-white/10 transition-colors"
@@ -298,6 +333,10 @@ const FormSimulator = () => {
               progress={progress}
               fieldOptions={activeField?.options}
               onApply={(value) => activeField && handleChange(activeField.name, value)}
+              docApi={webDocApi}
+              formFields={AUTOFILL_FIELDS}
+              formId="passport_fresh"
+              onAutofill={applyAutofill}
               chatMessages={chatMessages}
               onChatMessagesChange={setChatMessages}
               onSendChat={sendChat}
@@ -307,6 +346,16 @@ const FormSimulator = () => {
           )}
         </div>
       </main>
+
+      {!isPanelVisible && (
+        <button
+          onClick={() => setIsPanelVisible(true)}
+          data-testid="open-assistant-btn"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-gradient-to-r from-blue-500 to-emerald-500 px-5 py-3 rounded-full text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 hover:scale-105 transition-transform"
+        >
+          <Sparkles className="w-4 h-4" /> Assistant
+        </button>
+      )}
     </div>
   );
 };

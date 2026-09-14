@@ -52,7 +52,7 @@
     frame.className = 'formwise-frame';
     frame.title = 'FormWise assistant';
     frame.setAttribute('allowtransparency', 'true');
-    frame.src = chrome.runtime.getURL('panel/index.html');
+    frame.src = globalThis.chrome.runtime.getURL('panel/index.html');
     (document.body || document.documentElement).appendChild(frame);
   }
 

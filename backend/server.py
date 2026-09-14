@@ -17,6 +17,10 @@ ROOT_DIR = Path(__file__).parent
 APP_DIR = ROOT_DIR.parent
 load_dotenv(ROOT_DIR / '.env')
 
+from auth import auth_router, init_auth
+from doc_router import doc_router, init_documents
+from storage_service import storage
+
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
@@ -348,6 +352,27 @@ async def download_extension():
 
 # Include the router in the main app
 app.include_router(api_router)
+app.include_router(auth_router)
+app.include_router(doc_router)
+
+init_auth(db)
+init_documents(db)
+
+
+@app.on_event("startup")
+async def startup_services():
+    try:
+        storage.init()
+        logger.info("Object storage initialized")
+    except Exception as e:
+        logger.error(f"Storage init failed: {type(e).__name__}")
+    try:
+        await db.documents.create_index("_ttl", expireAfterSeconds=0)
+        await db.documents.create_index("user_id")
+        await db.documents.create_index("processing_status")
+        await db.user_sessions.create_index("session_token")
+    except Exception as e:
+        logger.error(f"Index creation failed: {type(e).__name__}")
 
 app.add_middleware(
     CORSMiddleware,

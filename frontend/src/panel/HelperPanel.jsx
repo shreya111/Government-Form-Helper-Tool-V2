@@ -4,6 +4,7 @@ import { PanelTabs } from "./PanelTabs";
 import { ProgressBar } from "./ProgressBar";
 import { FieldHelpTab } from "./FieldHelpTab";
 import { ChatTab } from "./ChatTab";
+import { DocumentsTab } from "./DocumentsTab";
 
 // Single source of truth for the FormWise panel; used by the web demo and the Chrome extension iframe.
 export const HelperPanel = ({
@@ -17,6 +18,10 @@ export const HelperPanel = ({
   progress,
   fieldOptions,
   onApply,
+  docApi,
+  formFields,
+  formId,
+  onAutofill,
   chatMessages,
   onChatMessagesChange,
   onSendChat,
@@ -49,6 +54,8 @@ export const HelperPanel = ({
           fieldOptions={fieldOptions}
           onApply={onApply}
         />
+      ) : activeTab === "documents" ? (
+        <DocumentsTab docApi={docApi} formFields={formFields} formId={formId} onAutofill={onAutofill} />
       ) : (
         <ChatTab
           messages={chatMessages}
