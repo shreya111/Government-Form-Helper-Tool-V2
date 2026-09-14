@@ -296,6 +296,8 @@ const FormSimulator = () => {
               response={aiResponse}
               error={error}
               progress={progress}
+              fieldOptions={activeField?.options}
+              onApply={(value) => activeField && handleChange(activeField.name, value)}
               chatMessages={chatMessages}
               onChatMessagesChange={setChatMessages}
               onSendChat={sendChat}

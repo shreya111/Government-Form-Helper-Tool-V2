@@ -137,6 +137,8 @@ const ExtensionPanel = () => {
       response={response}
       error={error}
       progress={progress}
+      fieldOptions={field?.options}
+      onApply={(value) => post({ type: "FW_APPLY", value })}
       chatMessages={chatMessages}
       onChatMessagesChange={persistChat}
       onSendChat={sendChat}

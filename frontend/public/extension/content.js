@@ -21,6 +21,7 @@
   let helpTimer = null;
   let progressTimer = null;
   let fieldCounter = 0;
+  let lastFieldEl = null;
   const labelCache = new WeakMap();
 
   // ========== BOOT ==========
@@ -84,6 +85,9 @@
         break;
       case 'FW_JUMP':
         jumpToField(msg.id);
+        break;
+      case 'FW_APPLY':
+        applyValue(msg.value);
         break;
       case 'FW_GET_PAGE_CONTEXT':
         post({ type: 'FW_PAGE_CONTEXT', requestId: msg.requestId, context: extractPageContext() });
@@ -166,9 +170,48 @@
       return;
     }
     console.log('FormWise: detected', info);
+    lastFieldEl = el;
     showPanel();
     highlight(el);
     post({ type: 'FW_FIELD', fieldInfo: info, formContext: FORM_CONTEXT });
+  }
+
+  // Apply the AI-recommended option to the real form control.
+  function applyValue(value) {
+    const el = lastFieldEl;
+    if (!el || !document.contains(el)) return;
+    const type = controlType(el);
+    const wanted = String(value);
+    if (type === 'radio') {
+      const group = radioGroup(el);
+      const target =
+        group.find((r) => r.value === wanted) ||
+        group.find((r) => (radioLabel(r) || '').toLowerCase() === wanted.toLowerCase());
+      if (target) {
+        target.checked = true;
+        fireEvents(target);
+      }
+    } else if (type === 'checkbox') {
+      el.checked = /^(yes|true|1|on)$/i.test(wanted);
+      fireEvents(el);
+    } else if (type === 'select') {
+      const opt =
+        Array.from(el.options).find((o) => o.value === wanted) ||
+        Array.from(el.options).find((o) => o.textContent.trim() === wanted);
+      if (opt) {
+        el.value = opt.value;
+        fireEvents(el);
+      }
+    } else {
+      el.value = wanted;
+      fireEvents(el);
+    }
+    highlight(el);
+    scheduleProgress(200);
+  }
+
+  function fireEvents(el) {
+    ['input', 'change'].forEach((t) => el.dispatchEvent(new Event(t, { bubbles: true })));
   }
 
   // ========== DOM OBSERVER (AJAX page transitions) ==========

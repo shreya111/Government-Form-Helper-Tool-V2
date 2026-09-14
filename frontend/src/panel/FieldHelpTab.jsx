@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
+  Wand2,
 } from "lucide-react";
 
 const Card = ({ tone, Icon, title, children, testId }) => {
@@ -28,9 +29,45 @@ const Card = ({ tone, Icon, title, children, testId }) => {
   );
 };
 
-const OptionsCard = ({ response }) => {
+// Normalise for loose comparison.
+const norm = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+
+// Pull the quoted target out of an AI recommendation like Select 'Yes'.
+const recTarget = (rec) => {
+  const m = String(rec || "").match(/['"“”‘’]([^'"“”‘’]+)['"“”‘’]/);
+  return m ? m[1] : rec;
+};
+
+// Map an AI recommendation to the real form option so we can apply it on the page.
+const matchOption = (recommendation, options) => {
+  if (!recommendation || !options?.length) return null;
+  const target = norm(recTarget(recommendation));
+  if (!target) return null;
+  const cand = options.map((o) => ({ opt: o, l: norm(o.label), v: norm(o.value) }));
+  return (
+    cand.find((c) => c.l === target || c.v === target)?.opt ||
+    cand.find((c) => c.v && (target === c.v || target.startsWith(c.v)))?.opt ||
+    cand.find((c) => c.l && (c.l.startsWith(target) || target.startsWith(c.l)))?.opt ||
+    cand.find((c) => c.l && (c.l.includes(target) || target.includes(c.l.split(" ")[0])))?.opt ||
+    null
+  );
+};
+
+const OptionsCard = ({ response, fieldOptions, onApply }) => {
   const [selected, setSelected] = useState(null);
-  useEffect(() => setSelected(null), [response]);
+  const [applied, setApplied] = useState(null);
+  useEffect(() => {
+    setSelected(null);
+    setApplied(null);
+  }, [response]);
+
+  const matched = selected?.recommendation ? matchOption(selected.recommendation, fieldOptions) : null;
+
+  const handleApply = () => {
+    if (!matched) return;
+    onApply?.(matched.value, matched.label);
+    setApplied(matched.value);
+  };
 
   return (
     <Card tone="emerald" Icon={MessageCircleQuestion} title="Which applies to you?" testId="options-card">
@@ -56,21 +93,45 @@ const OptionsCard = ({ response }) => {
         })}
       </div>
       {selected?.recommendation && (
-        <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-start gap-3" data-testid="recommendation-box">
-          <div className="bg-emerald-500 p-1.5 rounded-lg">
-            <ChevronRight className="w-4 h-4 text-white" />
+        <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500/20 to-emerald-500/10 border border-emerald-500/30 rounded-xl" data-testid="recommendation-box">
+          <div className="flex items-start gap-3">
+            <div className="bg-emerald-500 p-1.5 rounded-lg">
+              <ChevronRight className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Select This</span>
+              <p className="text-sm font-semibold text-white mt-1">{selected.recommendation}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Select This</span>
-            <p className="text-sm font-semibold text-white mt-1">{selected.recommendation}</p>
-          </div>
+          {matched && onApply && (
+            <button
+              onClick={handleApply}
+              disabled={applied === matched.value}
+              data-testid="apply-recommendation-btn"
+              className={`mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                applied === matched.value
+                  ? "bg-emerald-500/20 text-emerald-300 cursor-default"
+                  : "bg-emerald-500 text-white hover:bg-emerald-400"
+              }`}
+            >
+              {applied === matched.value ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4" /> Applied to form
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-4 h-4" /> Apply "{matched.label}"
+                </>
+              )}
+            </button>
+          )}
         </div>
       )}
     </Card>
   );
 };
 
-export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, error }) => (
+export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, error, fieldOptions, onApply }) => (
   <>
     {activeField && (
       <div className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 border-b border-white/10 px-5 py-3">
@@ -103,7 +164,7 @@ export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, 
       ) : response ? (
         <div className="space-y-4">
           {response.needs_interaction && response.question_options?.length > 0 ? (
-            <OptionsCard response={response} />
+            <OptionsCard response={response} fieldOptions={fieldOptions} onApply={onApply} />
           ) : (
             <Card tone="blue" Icon={Lightbulb} title="Expert Advice" testId="advice-card">
               <p className="text-sm text-white/70 leading-relaxed">{response.advice}</p>

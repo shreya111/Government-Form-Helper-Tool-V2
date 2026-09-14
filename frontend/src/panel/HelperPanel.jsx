@@ -15,6 +15,8 @@ export const HelperPanel = ({
   response,
   error,
   progress,
+  fieldOptions,
+  onApply,
   chatMessages,
   onChatMessagesChange,
   onSendChat,
@@ -44,6 +46,8 @@ export const HelperPanel = ({
           isLoading={isLoading}
           response={response}
           error={error}
+          fieldOptions={fieldOptions}
+          onApply={onApply}
         />
       ) : (
         <ChatTab

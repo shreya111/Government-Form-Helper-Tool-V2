@@ -16,6 +16,7 @@ Chrome Extension (Manifest V3) + web demo that acts as a real-time AI consultant
 - Previous sessions: Field Help + Chat tabs, Gemini guidance, FormWise rebrand, docs/voiceovers.
 - 2026-06 (session 1): repo audit; rebuilt stale zip; real icons; logo bundled; `config.js`; dead code + `/api/status` removed; PRD created.
 - 2026-06 (session 2): mock Passport Seva page; DOM detection overhaul (label[for]/aria → row cells → column headers → previous-row questions → nested tables → div wrapper labels → containers; radio-group common-ancestor logic; option-label stripping; noise filtering; section + help-text capture; MutationObserver + history hooks); unified React panel in iframe; required-field progress tracker (bar + missing list + jump-to-field) in demo and extension; backend accepts section/help context; landing title + testids. Testing agent iteration_2: 100% pass.
+- 2026-06 (session 3): one-click **Apply** for recommended dropdown/radio option. `FieldHelpTab` matches AI recommendation text → real form option (quoted-target + normalised label/value fuzzy match) and shows an Apply button in the recommendation box. Demo applies via `handleChange`; extension posts `FW_APPLY` → `content.js applyValue()` sets the real DOM control (select/radio/checkbox/text) + fires input/change + refreshes progress. Verified on `/demo` (Gender→Male) and `/mock-passport.html` (real DOM select `-1`→`M`).
 
 ## Backlog
 - P1: Verify on the live Passport Seva portal with the installed extension (only mock page verified in-browser).
