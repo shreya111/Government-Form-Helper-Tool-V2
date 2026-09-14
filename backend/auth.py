@@ -65,6 +65,12 @@ async def get_current_user(request: Request, authorization: str = Header(None)) 
     user_doc = await _db.users.find_one({"user_id": session["user_id"]}, {"_id": 0})
     if not user_doc:
         raise HTTPException(status_code=401, detail="User not found")
+    # Sliding expiry: extend an actively-used session so users (esp. the extension, whose token lives in
+    # chrome.storage and never expires client-side) stay signed in across restarts without re-authenticating.
+    # Throttled to at most once/day: only renews once more than a day has elapsed since the last extension.
+    if expires_at - datetime.now(timezone.utc) < timedelta(days=SESSION_DAYS - 1):
+        new_expiry = (datetime.now(timezone.utc) + timedelta(days=SESSION_DAYS)).isoformat()
+        await _db.user_sessions.update_one({"session_token": token}, {"$set": {"expires_at": new_expiry}})
     return User(**user_doc)
 
 
