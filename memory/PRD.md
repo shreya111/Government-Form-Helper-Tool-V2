@@ -44,6 +44,11 @@ Chrome Extension (Manifest V3) + web demo that acts as a real-time AI consultant
   - **Missing-doc prompts**: mapper adds `suggested_documents` per missing field + `summary.upload_hints` (per doc type, sorted by field_count) using the form-requirement `provides`; `UploadHints.jsx` in review + result; `FieldHelpTab` `DocHintCard` for the active unfilled field with "Open Documents". New ontology keys `aadhaar_number/pan_number/voter_id_number`; short keywords use word boundaries.
   - Extra seed: non-admin session `test_session_plain_2026` (see test_credentials.md).
 
+- 2026-06 (session 6): **Fix — extension sign-in never registered as logged in** (backend + auth tests green; extension e2e requires user to reload the rebuilt ZIP in Chrome).
+  - Root cause: the packaged panel is a `chrome-extension://` iframe, so the `session_token` cookie is a **third-party cookie** (blocked by Chrome) → `/api/auth/me` returned 401 and the panel stayed on "Waiting for sign-in…".
+  - Fix (Bearer token for the extension, cookie flow untouched for web): `POST /api/auth/session` now also returns `session_token` in the body. `App.js` AuthCallback, on the `/auth/extension` flow, relays the token via `window.postMessage({source:'formwise-ext-auth'})`. New content script `extension/auth-relay.js` (matches `/auth/extension*`, `run_at document_start`) stores it in `chrome.storage.local` as `fw_session_token`. `extension-panel/index.jsx` `api()`/upload now send `Authorization: Bearer <token>` (still keep `credentials:'include'`), and `logout()` clears it. Extension rebuilt (`formwise-extension.zip`, includes `auth-relay.js`).
+  - Note: `tests/test_formwise_api.py::test_extension_download_zip_contents` asserts manifest `2.0.0` but manifest is `2.1.0` (pre-existing stale assertion, unrelated).
+
 ## Backlog (document autofill / product)
 - Live Portal Check: tune detection/autofill against real Passport Seva HTML snippets (user to paste) — mock page verified only.
 - Docs: document-intelligence.md, autofill-architecture.md, privacy.md, security.md, future-digilocker-integration.md.

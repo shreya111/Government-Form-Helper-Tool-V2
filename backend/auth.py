@@ -114,7 +114,10 @@ async def create_session(response: Response, x_session_id: str = Header(None)):
         key="session_token", value=session_token, max_age=SESSION_DAYS * 24 * 3600,
         httponly=True, secure=True, samesite="none", path="/",
     )
-    return {"user_id": user_id, "email": email, "name": data.get("name", ""), "picture": data.get("picture", "")}
+    # session_token is also returned so the Chrome extension (a cross-site chrome-extension:// origin
+    # where third-party cookies are blocked) can store it and send it as an Authorization Bearer token.
+    return {"user_id": user_id, "email": email, "name": data.get("name", ""),
+            "picture": data.get("picture", ""), "session_token": session_token}
 
 
 @auth_router.get("/me")

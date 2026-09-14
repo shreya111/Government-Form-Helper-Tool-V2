@@ -35,8 +35,15 @@ const settle = (msg, pick) => {
 };
 
 // Direct, cookie-authenticated calls from the extension page (host_permissions cover the API origin).
+// In the packaged extension the panel is a chrome-extension:// iframe, so the session cookie is a
+// blocked third-party cookie. We fall back to the Bearer token stored by auth-relay.js after sign-in.
+const getToken = async () => {
+  try { return (await ext().storage.local.get("fw_session_token")).fw_session_token || null; } catch { return null; }
+};
 const api = async (path, init = {}) => {
-  const res = await fetch(`${apiBase()}${path}`, { credentials: "include", ...init });
+  const token = await getToken();
+  const headers = { ...(init.headers || {}), ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  const res = await fetch(`${apiBase()}${path}`, { credentials: "include", ...init, headers });
   if (!res.ok) {
     let detail = `Request failed (${res.status})`;
     try { detail = (await res.json()).detail || detail; } catch (_) {}
@@ -49,11 +56,13 @@ const api = async (path, init = {}) => {
 };
 const json = (method, body) => ({ method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
-const uploadWithProgress = (file, onProgress) =>
-  new Promise((resolve, reject) => {
+const uploadWithProgress = async (file, onProgress) => {
+  const token = await getToken();
+  return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${apiBase()}/documents/upload`);
     xhr.withCredentials = true;
+    if (token) xhr.setRequestHeader("Authorization", `Bearer ${token}`);
     xhr.upload.onprogress = (e) => onProgress?.(e.lengthComputable ? Math.round((e.loaded / e.total) * 100) : 0);
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) return resolve(JSON.parse(xhr.responseText));
@@ -66,6 +75,7 @@ const uploadWithProgress = (file, onProgress) =>
     form.append("file", file);
     xhr.send(form);
   });
+};
 
 const extDocApi = {
   available: true,
@@ -78,7 +88,7 @@ const extDocApi = {
     const redirect = encodeURIComponent(`${webOrigin()}/auth/extension`);
     ext().runtime.sendMessage({ type: "OPEN_TAB", url: `https://auth.emergentagent.com/?redirect=${redirect}` });
   },
-  async logout() { await api("/auth/logout", { method: "POST" }); },
+  async logout() { await api("/auth/logout", { method: "POST" }); try { await ext().storage.local.remove("fw_session_token"); } catch (_) {} },
   requirements: (formId) => api(`/forms/${formId}/requirements`),
   list: () => api("/documents"),
   upload: uploadWithProgress,

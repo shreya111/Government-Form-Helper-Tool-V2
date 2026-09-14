@@ -21,7 +21,15 @@ function AuthCallback() {
     const dest = location.pathname === "/auth/extension" ? "/auth/extension" : "/demo";
     (async () => {
       try {
-        if (sid) await exchangeSession(sid);
+        if (sid) {
+          const data = await exchangeSession(sid);
+          // Extension flow: the panel lives in a chrome-extension:// iframe where the session cookie is a
+          // blocked third-party cookie. Relay the token to the extension content script (auth-relay.js),
+          // which stores it for Bearer-authenticated calls. REMINDER: DO NOT HARDCODE THE URL.
+          if (dest === "/auth/extension" && data?.session_token) {
+            window.postMessage({ source: "formwise-ext-auth", token: data.session_token }, window.location.origin);
+          }
+        }
       } catch (e) {
         // fall through; the destination shows the signed-out state
       }

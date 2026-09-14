@@ -34,6 +34,13 @@
       "js": ["content.js"],
       "css": ["styles.css"],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://formwise-demo.preview.emergentagent.com/auth/extension*"
+      ],
+      "js": ["auth-relay.js"],
+      "run_at": "document_start"
     }
   ],
   "icons": {
