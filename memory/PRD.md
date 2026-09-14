@@ -4,17 +4,21 @@
 Chrome Extension (Manifest V3) + web demo that acts as a real-time AI consultant on Indian government form sites (Passport Seva). A glassmorphic side panel is injected into the page; focusing a field triggers AI advice ("Field Help" tab); a "Chat" tab answers free-form questions using page context. Deliverables: landing page, form simulator demo, downloadable extension zip.
 
 ## Architecture
-- `backend/server.py` — FastAPI. `POST /api/form-help`, `POST /api/chat`, `GET /api/form-help/history`, `GET /api/extension/download`. Gemini 2.5 Flash via Emergent LLM key (`emergentintegrations`). Mongo only logs history.
-- `frontend/src/pages/LandingPage.jsx` (`/`), `FormSimulator.jsx` (`/demo`, contains inline AIHelperPanel + form).
-- `extension/` — `manifest.json`, `config.js` (API base URL), `background.js` (service worker, `importScripts('config.js')`), `content.js` (DOM detection + panel UI), `styles.css`, `icons/` (icon16/48/128 + `logo.png` via web_accessible_resources).
-- `/app/formwise-extension.zip` — built with `cd /app && zip -rq formwise-extension.zip extension`. MUST be rebuilt after any extension change.
-- UI parity: panel UI exists twice (FormSimulator.jsx and content.js/styles.css).
+- `backend/server.py` — FastAPI. `POST /api/form-help` (field_label, field_type, field_options, section_context, help_text, form_context), `POST /api/chat`, `GET /api/form-help/history`, `GET /api/extension/download`. Gemini 2.5 Flash via Emergent LLM key. Mongo only logs history.
+- `frontend/src/pages/LandingPage.jsx` (`/`), `FormSimulator.jsx` (`/demo`).
+- **Shared panel UI (single source of truth):** `frontend/src/panel/` — `HelperPanel.jsx`, `PanelHeader`, `PanelTabs`, `ProgressBar`, `FieldHelpTab`, `ChatTab`. Used directly by `/demo` and bundled for the extension.
+- `frontend/src/extension-panel/index.jsx` — iframe bridge for the extension (postMessage `FW_*` protocol with content.js; API via `chrome.runtime.sendMessage`; chat history in `chrome.storage.local`).
+- `frontend/scripts/build-extension.js` (`yarn build:extension`) — esbuild + Tailwind CLI → `extension/panel/panel.js|css`, mirrors extension to `frontend/public/extension/`, rebuilds `/app/formwise-extension.zip`. **Run after any change under `src/panel`, `src/extension-panel`, or `/app/extension`.**
+- `extension/` — `manifest.json` (v2.0.0), `config.js` (API base URL), `background.js`, `content.js` (scored label detection, section/help-text capture, required-field progress scan, MutationObserver for AJAX, iframe messaging), `styles.css` (iframe + highlight only), `panel/` (built), `icons/`.
+- Mock test page: `frontend/public/mock-passport.html` + `formwise-shim.js` (emulates chrome.* so content.js runs without the extension installed; real extension takes precedence).
 
 ## Implemented
-- Field Help + Chat tabs, Gemini guidance, rebranding to FormWise, README/MASTER_PROMPT/voiceover docs (previous sessions).
-- 2026-06 (this session): repo audit; rebuilt stale zip (was pointing at old `formaid` preview URL); real FormWise icons generated from `formwise-logo.png`; logo bundled locally; API URL centralised in `extension/config.js`; removed dead `components/AIHelperPanel.jsx` & `PassportForm.jsx`; removed boilerplate `/api/status` endpoints; finished Government Form Helper → FormWise rename; `backend_test.py` updated (5/5 pass); extension v1.2.0.
+- Previous sessions: Field Help + Chat tabs, Gemini guidance, FormWise rebrand, docs/voiceovers.
+- 2026-06 (session 1): repo audit; rebuilt stale zip; real icons; logo bundled; `config.js`; dead code + `/api/status` removed; PRD created.
+- 2026-06 (session 2): mock Passport Seva page; DOM detection overhaul (label[for]/aria → row cells → column headers → previous-row questions → nested tables → div wrapper labels → containers; radio-group common-ancestor logic; option-label stripping; noise filtering; section + help-text capture; MutationObserver + history hooks); unified React panel in iframe; required-field progress tracker (bar + missing list + jump-to-field) in demo and extension; backend accepts section/help context; landing title + testids. Testing agent iteration_2: 100% pass.
 
 ## Backlog
-- P0: DOM detection overhaul in `extension/content.js` (scoring-based label discovery, table/column headers, previous-row questions, aria-labelledby, section headings, MutationObserver for AJAX transitions; send section context to backend). User chose to defer this.
-- P1: Mock Passport-Seva-style test page for extension verification; E2E tests for extension.
-- P2: Unify panel UI between React demo and extension; replace deprecated `@app.on_event`; tighten CORS.
+- P1: Verify on the live Passport Seva portal with the installed extension (only mock page verified in-browser).
+- P1: Speed up `/api/form-help` (LLM responses take 15–30s; consider shorter prompt / streaming / caching by label).
+- P2: E2E test suite for the extension on the mock page (Playwright).
+- P2: Replace deprecated `@app.on_event`; tighten CORS.

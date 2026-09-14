@@ -65,6 +65,7 @@ const LandingPage = () => {
             </div>
             <a 
               href={`${BACKEND_URL}/api/extension/download`}
+              data-testid="nav-download-btn"
               className="group flex items-center gap-2 bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 px-5 py-2.5 rounded-full text-sm font-semibold transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40"
             >
               <Download className="w-4 h-4" />
@@ -100,6 +101,7 @@ const LandingPage = () => {
               <div className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start">
                 <a 
                   href={`${BACKEND_URL}/api/extension/download`}
+              data-testid="hero-download-btn"
                   className="group flex items-center gap-3 bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 px-8 py-4 rounded-2xl text-lg font-semibold transition-all shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
                 >
                   <Chrome className="w-6 h-6" />
@@ -367,6 +369,7 @@ const LandingPage = () => {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <a 
                   href={`${BACKEND_URL}/api/extension/download`}
+              data-testid="cta-download-btn"
                   className="group flex items-center gap-3 bg-gradient-to-r from-blue-500 to-emerald-500 hover:from-blue-600 hover:to-emerald-600 px-8 py-4 rounded-2xl text-lg font-semibold transition-all shadow-2xl shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105"
                 >
                   <Download className="w-6 h-6" />

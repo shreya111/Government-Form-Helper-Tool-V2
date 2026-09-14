@@ -1,0 +1,41 @@
+{
+  "summary": "Comprehensive regression testing of FormWise iteration 2 (mock passport page + shared React panel + progress tracker + chat). Backend: 6/6 pytest passing (form-help w/ new optional fields, form-help backward compat, chat, extension zip contents+manifest v2.0.0, /api/status returns 404, history). Frontend: /demo and /mock-passport.html both fully functional. All 11 field label detections on mock page matched spec exactly (givenName, boi_n, ms_single, nonEcr_y, street, mobile, emergencyName, emergencyMobile, gs_y, fatherName after AJAX). Progress tracker shows 4/18 initially and increments to 5/18 after filling givenName. Jump-to-field expands missing list, focuses field on parent page. Field help produces options-card and recommendation-box on option-btn click. Chat sends+receives, persists across reload via localStorage shim. Close panel removes 'visible' class. Landing page download links point to /api/extension/download. Mobile 390px viewport: panel fills full width, no layout breakage.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "passed_tests": [
+    "POST /api/form-help with section_context + help_text -> 200 with advice/warning",
+    "POST /api/form-help backward compat without new optional fields -> 200",
+    "POST /api/chat with structured page_context -> 200 with response string",
+    "GET /api/extension/download -> application/zip containing panel.js, index.html, content.js, config.js, manifest.json (v2.0.0)",
+    "GET /api/status -> 404 (removed)",
+    "GET /api/form-help/history -> 200 list",
+    "Mock passport page: all 11 field detections match expected labels (givenName, boi_n, ms_single, nonEcr_y, street, mobile, emergencyName, emergencyMobile, gs_y, fatherName post-AJAX)",
+    "Mock passport progress-count: 4/18 initial, 5/18 after fill; toggle expands list; item click focuses parent field",
+    "Mock passport panel-loading -> options-card -> option-btn click -> recommendation-box",
+    "Mock passport chat: user message immediate, assistant reply within ~45s; persists across reload",
+    "Mock passport close-panel-btn removes 'visible' class from #formwise-frame",
+    "Demo page: click input-surname -> panel-question='Surname (Last Name)', panel-section='Applicant Details'; 0/13 -> 2/13 on filling given_name+gender; jump-to-field focuses input; tab-chat send/receive; close-panel-btn hides panel",
+    "Landing page loads; three anchors point to /api/extension/download",
+    "Mobile 390px: /demo panel bbox = 390x844 (full width, no overflow)"
+  ],
+  "test_report_links": [
+    "/app/backend/tests/test_formwise_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Landing page HTML <title> is still 'Emergent | Fullstack App' - consider updating to 'FormWise'.",
+    "Download anchors on landing page lack data-testid (only demo header has download-extension-btn).",
+    "test_credentials.md not present under /app/memory - not needed here (no auth), but flagged per protocol."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_formwise_api.py"
+  ],
+  "success_rate": {"backend": "100% (6/6)", "frontend": "100% of tested flows"},
+  "test_credentials": "None required (no auth in app; /app/memory/test_credentials.md not present).",
+  "seed_data_creation": "None",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "backend_test.py legacy file still at /app/backend_test.py (unused now). Pytest suite lives at /app/backend/tests/test_formwise_api.py. Chat endpoint requires page_context as a structured object (page_title, page_url, page_text, form_data), not a raw string - see fixture. LLM responses on /api/form-help and /api/chat take up to ~30-45s; use generous waits. Mock page iframe #formwise-frame is off-screen (right:-460px) until a field is clicked; interact only after a field click. AJAX Family Details section loads after clicking #loadFamilyBtn or after ~2.5s.",
+  "rca of the issue": "N/A - no defects found in this iteration."
+}

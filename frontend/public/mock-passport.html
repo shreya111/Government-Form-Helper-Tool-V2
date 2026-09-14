@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Passport Seva | Applicant Details (Mock)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: 12px; color: #222; background: #eef1f6; }
+  .topbar { background: #1a3d7c; color: #fff; padding: 6px 18px; font-size: 11px; display: flex; justify-content: space-between; }
+  .header { background: #fff; padding: 10px 18px; border-bottom: 4px solid #f5851f; display: flex; align-items: center; gap: 14px; }
+  .header .emblem { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(#f5851f 33%, #fff 33% 66%, #138808 66%); border: 1px solid #ccc; }
+  .header h1 { margin: 0; font-size: 20px; color: #1a3d7c; }
+  .header p { margin: 0; font-size: 11px; color: #555; }
+  .nav { background: #2f5aa8; padding: 0 18px; }
+  .nav a { display: inline-block; color: #fff; padding: 8px 14px; text-decoration: none; font-size: 12px; }
+  .nav a.active { background: #f5851f; }
+  .mock-banner { background: #fff3cd; color: #7a5a00; border-bottom: 1px solid #f0d78a; padding: 6px 18px; font-size: 11px; }
+  .wrap { max-width: 980px; margin: 14px auto; background: #fff; border: 1px solid #c9d3e3; }
+  .steps { display: flex; border-bottom: 1px solid #c9d3e3; }
+  .steps span { flex: 1; text-align: center; padding: 7px 0; font-size: 11px; color: #666; border-right: 1px solid #e1e7f0; }
+  .steps span.current { background: #dfe9fa; color: #1a3d7c; font-weight: bold; }
+  .content { padding: 14px 18px 24px; }
+  .pageTitle { font-size: 15px; color: #1a3d7c; font-weight: bold; margin: 4px 0 12px; }
+  .note-mand { color: #c00; font-size: 11px; margin-bottom: 10px; }
+  table.tableBorder { border-collapse: collapse; width: 100%; margin-bottom: 14px; }
+  table.tableBorder td, table.tableBorder th { border: 1px solid #d5dde9; padding: 6px 8px; vertical-align: middle; }
+  table.tableBorder th { background: #e8eef8; text-align: left; font-weight: bold; color: #1a3d7c; }
+  td.lbl { width: 34%; background: #f7f9fc; }
+  td.sectionHead { background: #2f5aa8; color: #fff; font-weight: bold; font-size: 13px; }
+  .mandatory { color: #c00; font-weight: bold; margin-left: 2px; }
+  .hint { color: #777; font-style: italic; font-size: 11px; }
+  input[type=text], select, textarea { font-size: 12px; padding: 3px 4px; border: 1px solid #a9b6c9; }
+  input[type=text] { width: 220px; }
+  select { min-width: 160px; }
+  textarea { width: 260px; }
+  fieldset { border: 1px solid #c9d3e3; margin: 0 0 14px; padding: 8px 12px; }
+  legend { color: #1a3d7c; font-weight: bold; padding: 0 6px; }
+  .form-group { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px dotted #e1e7f0; }
+  .col-label { width: 34%; }
+  .control-label { font-weight: bold; }
+  .help-block { color: #777; font-size: 11px; margin-top: 2px; }
+  .sectionTitle { font-size: 13px; color: #fff; background: #2f5aa8; padding: 6px 8px; margin: 14px 0 8px; font-weight: bold; }
+  .btns { text-align: right; margin-top: 10px; }
+  .btns input { padding: 6px 18px; background: #f5851f; color: #fff; border: 0; font-weight: bold; cursor: pointer; margin-left: 6px; }
+  .btns input.secondary { background: #6b7c99; }
+  #ajaxStatus { color: #1a3d7c; font-style: italic; }
+  .footer { text-align: center; color: #888; font-size: 10px; padding: 12px; }
+</style>
+</head>
+<body>
+<div class="topbar"><span>Government of India &nbsp;|&nbsp; Ministry of External Affairs</span><span>Skip to main content &nbsp;|&nbsp; A- A A+</span></div>
+<div class="header">
+  <div class="emblem"></div>
+  <div>
+    <h1>Passport Seva</h1>
+    <p>Consular, Passport &amp; Visa Division — Online Passport Application (Mock Page)</p>
+  </div>
+</div>
+<div class="nav"><a href="#">Home</a><a href="#" class="active">Apply</a><a href="#">Track Status</a><a href="#">Appointment</a><a href="#">Help</a></div>
+<div class="mock-banner" data-testid="mock-banner"><b>MOCK PAGE</b> — This is a FormWise test page that mimics the Passport Seva portal's legacy HTML. Click any field to see detection in action. No data is submitted anywhere.</div>
+
+<div class="wrap">
+  <div class="steps">
+    <span>Passport Type</span><span class="current">Applicant Details</span><span>Family Details</span><span>Present Address</span><span>Emergency Contact</span><span>References</span><span>Previous Passport</span><span>Other Details</span>
+  </div>
+
+  <div class="content">
+    <form id="applicantForm" onsubmit="return false;">
+      <div class="pageTitle">Applicant Details</div>
+      <div class="note-mand">Fields marked with <span class="mandatory">*</span> are mandatory.</div>
+
+      <table class="tableBorder">
+        <tr><td class="sectionHead" colspan="3">Personal Particulars</td></tr>
+        <tr>
+          <td class="lbl"><font>Applicant's Given Name</font><span class="mandatory">*</span></td>
+          <td><input type="text" name="givenName" id="givenName" maxlength="45"></td>
+          <td class="hint">(Given Name as it appears in the 10th Standard certificate)</td>
+        </tr>
+        <tr>
+          <td class="lbl"><font>Surname</font></td>
+          <td><input type="text" name="surname" id="surname" maxlength="45"></td>
+          <td class="hint">(Leave blank if you do not have a surname)</td>
+        </tr>
+        <tr>
+          <td class="lbl">Gender<span class="mandatory">*</span></td>
+          <td>
+            <select name="gender" id="gender">
+              <option value="-1">--Select--</option>
+              <option value="M">Male</option>
+              <option value="F">Female</option>
+              <option value="T">Transgender</option>
+            </select>
+          </td>
+          <td></td>
+        </tr>
+        <tr>
+          <td class="lbl">Date of Birth (DD/MM/YYYY)<span class="mandatory">*</span></td>
+          <td><input type="text" name="dob" id="dob" placeholder="DD/MM/YYYY" maxlength="10"></td>
+          <td class="hint">e.g. 15/08/1990</td>
+        </tr>
+        <tr>
+          <td colspan="3"><b>Is your place of birth out of India?</b><span class="mandatory">*</span></td>
+        </tr>
+        <tr>
+          <td class="lbl"></td>
+          <td colspan="2">
+            <input type="radio" name="birthOutOfIndia" id="boi_y" value="Y"> <label for="boi_y">Yes</label>
+            &nbsp;&nbsp;
+            <input type="radio" name="birthOutOfIndia" id="boi_n" value="N"> <label for="boi_n">No</label>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl">Place of Birth (Village / Town / City)<span class="mandatory">*</span></td>
+          <td colspan="2"><input type="text" name="placeOfBirth" id="placeOfBirth" title="Enter village, town or city as per birth certificate"></td>
+        </tr>
+        <tr>
+          <td class="lbl">Marital Status<span class="mandatory">*</span></td>
+          <td><input type="radio" name="maritalStatus" id="ms_married" value="MARRIED"> Married</td>
+          <td><input type="radio" name="maritalStatus" id="ms_single" value="SINGLE"> Single</td>
+        </tr>
+        <tr>
+          <td class="lbl">Citizenship of India by<span class="mandatory">*</span></td>
+          <td colspan="2">
+            <select name="citizenship" id="citizenship">
+              <option value="">Select</option>
+              <option value="BIRTH">Birth</option>
+              <option value="DESCENT">Descent</option>
+              <option value="REGISTRATION">Registration / Naturalization</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl">PAN (if available)</td>
+          <td colspan="2"><input type="text" name="pan" id="pan" maxlength="10"></td>
+        </tr>
+        <tr>
+          <td class="lbl">Voter ID (if available)</td>
+          <td colspan="2"><input type="text" name="voterId" id="voterId"></td>
+        </tr>
+        <tr>
+          <td class="lbl"><b>Employment Type</b><font color="red">*</font></td>
+          <td colspan="2">
+            <select name="employmentType" id="employmentType">
+              <option value="-1">--Select--</option>
+              <option value="GOVT">Government</option>
+              <option value="PSU">Public Sector Undertaking</option>
+              <option value="PVT">Private</option>
+              <option value="SELF">Self Employed</option>
+              <option value="STUDENT">Student</option>
+              <option value="HOMEMAKER">Homemaker</option>
+              <option value="RETIRED">Retired Government Servant</option>
+              <option value="NA">Not Employed</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td class="lbl">Educational Qualification<span class="mandatory">*</span></td>
+          <td colspan="2">
+            <select name="education" id="education" title="Highest qualification achieved">
+              <option value="-1">--Select--</option>
+              <option value="BELOW10">7th pass or less</option>
+              <option value="BETWEEN">Between 8th and 9th standard</option>
+              <option value="10TH">10th pass and above</option>
+              <option value="GRAD">Graduate and above</option>
+            </select>
+          </td>
+        </tr>
+      </table>
+
+      <fieldset>
+        <legend>Non-ECR Category</legend>
+        <div>Is applicant eligible for Non-ECR category?<span class="mandatory">*</span>
+          <span class="hint">(Non-ECR applies if you have passed 10th standard or above)</span>
+        </div>
+        <label><input type="radio" name="nonEcr" id="nonEcr_y" value="Y"> Yes</label>
+        &nbsp;&nbsp;
+        <label><input type="radio" name="nonEcr" id="nonEcr_n" value="N"> No</label>
+      </fieldset>
+
+      <table class="tableBorder">
+        <tr><td class="sectionHead" colspan="2">Present Residential Address</td></tr>
+        <tr>
+          <td colspan="2">
+            <table style="width:100%">
+              <tr>
+                <td class="lbl">House No. and Street Name<span class="mandatory">*</span></td>
+                <td><textarea name="street" id="street" rows="2"></textarea></td>
+              </tr>
+              <tr>
+                <td class="lbl">Village or Town or City<span class="mandatory">*</span></td>
+                <td><input type="text" name="city" id="city"></td>
+              </tr>
+              <tr>
+                <td class="lbl">PIN Code<span class="mandatory">*</span></td>
+                <td><input type="text" name="pin" id="pin" maxlength="6"> <span class="hint">(6 digit PIN)</span></td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <th>Mobile Number<span class="mandatory">*</span></th>
+          <th>Email ID</th>
+        </tr>
+        <tr>
+          <td><input type="text" name="mobile" id="mobile" maxlength="10"></td>
+          <td><input type="text" name="email" id="email"></td>
+        </tr>
+      </table>
+
+      <div class="sectionTitle">Emergency Contact</div>
+      <div class="form-group">
+        <div class="col-label"><span class="control-label">Name and Address<span class="mandatory">*</span></span><div class="help-block">Person to contact in case of emergency</div></div>
+        <div class="col-input"><input type="text" name="emergencyName" id="emergencyName"></div>
+      </div>
+      <div class="form-group">
+        <div class="col-label"><span class="control-label">Mobile Number</span></div>
+        <div class="col-input"><input type="text" name="emergencyMobile" id="emergencyMobile" aria-label="Emergency contact mobile number"></div>
+      </div>
+      <div class="form-group">
+        <div class="col-label"><span class="control-label">Telephone Number</span></div>
+        <div class="col-input"><input type="text" name="emergencyPhone" id="emergencyPhone"></div>
+      </div>
+
+      <div class="sectionTitle">Family Details <span id="ajaxStatus">(loading via AJAX…)</span></div>
+      <div id="familyDetails" data-testid="family-details">
+        <input type="button" id="loadFamilyBtn" value="Load Family Details now" class="secondary" style="background:#6b7c99;color:#fff;border:0;padding:5px 12px;cursor:pointer">
+      </div>
+
+      <div class="btns">
+        <input type="button" value="Save My Details" class="secondary">
+        <input type="button" value="Save and Continue">
+      </div>
+    </form>
+  </div>
+</div>
+<div class="footer">Mock page for FormWise extension testing — not affiliated with Passport Seva.</div>
+
+<script>
+  (function () {
+    var loaded = false;
+    function loadFamily() {
+      if (loaded) return;
+      loaded = true;
+      document.getElementById('ajaxStatus').textContent = '';
+      document.getElementById('familyDetails').innerHTML =
+        '<table class="tableBorder">' +
+        '<tr><td class="lbl">Father\'s Given Name<span class="mandatory">*</span></td><td><input type="text" name="fatherName" id="fatherName"></td></tr>' +
+        '<tr><td class="lbl">Mother\'s Given Name<span class="mandatory">*</span></td><td><input type="text" name="motherName" id="motherName"></td></tr>' +
+        '<tr><td class="lbl">Legal Guardian\'s Given Name (if applicable)</td><td><input type="text" name="guardianName" id="guardianName"></td></tr>' +
+        '<tr><td colspan="2">Is either of your parent (in case of minor) / spouse, a government servant?<span class="mandatory">*</span></td></tr>' +
+        '<tr><td></td><td><input type="radio" name="govtServant" id="gs_y" value="Y"> Yes &nbsp; <input type="radio" name="govtServant" id="gs_n" value="N"> No</td></tr>' +
+        '</table>';
+    }
+    document.getElementById('loadFamilyBtn').addEventListener('click', loadFamily);
+    setTimeout(loadFamily, 2500);
+  })();
+</script>
+
+<!-- FormWise: dev shim + extension content script (skipped automatically if the real extension is installed) -->
+<link rel="stylesheet" href="/extension/styles.css">
+<script src="/formwise-shim.js"></script>
+<script src="/extension/content.js"></script>
+</body>
+</html>

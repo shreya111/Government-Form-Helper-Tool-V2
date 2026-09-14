@@ -40,6 +40,8 @@ class FormHelpRequest(BaseModel):
     field_label: str
     field_type: Optional[str] = "input"
     field_options: Optional[str] = ""
+    section_context: Optional[str] = ""
+    help_text: Optional[str] = ""
     form_context: Optional[str] = "Indian Passport Application Form"
 
 class QuestionOption(BaseModel):
@@ -139,6 +141,10 @@ async def get_form_help(request: FormHelpRequest):
         options_info = ""
         if request.field_options:
             options_info = f"\nDetected form options: {request.field_options}"
+        if request.section_context:
+            options_info += f"\nForm section: {request.section_context}"
+        if request.help_text:
+            options_info += f"\nHelp text shown next to the field: {request.help_text}"
         
         user_prompt = f"""User needs help with this form question:
 Question/Field: "{request.field_label}"

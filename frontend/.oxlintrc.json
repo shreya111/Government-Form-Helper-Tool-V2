@@ -1,0 +1,6 @@
+{
+  "ignorePatterns": ["public/extension/**", "build/**", "node_modules/**"],
+  "globals": {
+    "chrome": "readonly"
+  }
+}
