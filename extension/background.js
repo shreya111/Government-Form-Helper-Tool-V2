@@ -1,6 +1,7 @@
-// Government Form Helper - Background Service Worker
+// FormWise - Background Service Worker
 
-const API_BASE_URL = 'https://formaid.preview.emergentagent.com/api';
+importScripts('config.js');
+const API_BASE_URL = FORMWISE_API_BASE_URL;
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'GET_FORM_HELP') {
@@ -60,5 +61,5 @@ async function sendChatMessage(payload) {
 }
 
 chrome.runtime.onInstalled.addListener((details) => {
-  console.log('Government Form Helper installed:', details.reason);
+  console.log('FormWise installed:', details.reason);
 });

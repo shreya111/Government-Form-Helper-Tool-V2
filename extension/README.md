@@ -62,9 +62,15 @@ AI-powered assistant for filling out Indian government forms, with a focus on th
   - `services1.passportindia.gov.in/*`
 - **AI Model**: Gemini 2.5 Flash for intelligent guidance and chat
 - **Architecture**:
+  - `config.js`: Single place to set the backend API base URL (`FORMWISE_API_BASE_URL`)
   - `content.js`: Injects UI, detects fields, extracts page context
-  - `background.js`: Service worker for API communication
+  - `background.js`: Service worker for API communication (imports `config.js`)
   - `styles.css`: Glassmorphic dark theme UI
+  - `icons/`: Toolbar icons and the bundled panel logo (`logo.png`, exposed via `web_accessible_resources`)
+
+### Changing the backend URL
+
+Edit `FORMWISE_API_BASE_URL` in `config.js` and update the matching origin in `host_permissions` inside `manifest.json`, then reload the extension.
 
 ## Features by Tab
 
@@ -97,4 +103,5 @@ For issues, questions, or feature requests, please visit the project repository 
 
 ## Version
 
+**v1.2.0** - Real FormWise icons, logo bundled locally, backend URL centralised in `config.js`
 **v1.1.0** - Added Chat feature with full page context awareness and session persistence

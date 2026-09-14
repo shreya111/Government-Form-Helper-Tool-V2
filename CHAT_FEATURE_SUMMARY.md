@@ -121,7 +121,7 @@ curl -X POST http://localhost:8001/api/chat \
 **Result**: ✅ Returns contextual response about required documents
 
 ### Web Demo Test
-1. Open: `https://formaid.preview.emergentagent.com/demo`
+1. Open: `https://formwise-demo.preview.emergentagent.com/demo`
 2. Click any form field to open panel
 3. Click "Chat" tab
 4. Type: "What documents do I need for passport?"
@@ -156,16 +156,16 @@ curl -X POST http://localhost:8001/api/chat \
 
 ## Download Links
 
-- **Extension Download**: https://formaid.preview.emergentagent.com/api/extension/download
-- **Web Demo**: https://formaid.preview.emergentagent.com/demo
-- **Landing Page**: https://formaid.preview.emergentagent.com/
+- **Extension Download**: https://formwise-demo.preview.emergentagent.com/api/extension/download
+- **Web Demo**: https://formwise-demo.preview.emergentagent.com/demo
+- **Landing Page**: https://formwise-demo.preview.emergentagent.com/
 
 ## Usage Instructions
 
 ### For End Users
 
 #### In Web Demo:
-1. Go to https://formaid.preview.emergentagent.com/demo
+1. Go to https://formwise-demo.preview.emergentagent.com/demo
 2. Click any form field to open the helper panel
 3. Click the "Chat" tab at the top
 4. Type your question and press Enter or click Send
@@ -175,7 +175,7 @@ curl -X POST http://localhost:8001/api/chat \
    - "What does tatkal mean?"
 
 #### In Chrome Extension:
-1. Download from: https://formaid.preview.emergentagent.com/api/extension/download
+1. Download from: https://formwise-demo.preview.emergentagent.com/api/extension/download
 2. Extract the ZIP file
 3. Go to `chrome://extensions/`
 4. Enable "Developer mode"

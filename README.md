@@ -7,7 +7,7 @@
   
   Simplify filling out Indian government forms with real-time AI guidance
   
-  [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue?logo=google-chrome)](https://formaid.preview.emergentagent.com/api/extension/download)
+  [![Chrome Extension](https://img.shields.io/badge/Chrome-Extension-blue?logo=google-chrome)](https://formwise-demo.preview.emergentagent.com/api/extension/download)
   [![React](https://img.shields.io/badge/React-18.0-61dafb?logo=react)](https://reactjs.org/)
   [![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
   [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -36,7 +36,7 @@
 ### For Users (Chrome Extension)
 
 1. **Download the Extension**
-   - Visit: https://formaid.preview.emergentagent.com/api/extension/download
+   - Visit: https://formwise-demo.preview.emergentagent.com/api/extension/download
    - Or download directly: `formwise-extension.zip`
 
 2. **Install in Chrome**
@@ -57,7 +57,7 @@
 
 ### Try the Web Demo
 
-Visit the interactive demo at: https://formaid.preview.emergentagent.com/demo
+Visit the interactive demo at: https://formwise-demo.preview.emergentagent.com/demo
 
 ---
 
@@ -275,7 +275,7 @@ formwise/
 
 ### Base URL
 ```
-https://formaid.preview.emergentagent.com/api
+https://formwise-demo.preview.emergentagent.com/api
 # or locally: http://localhost:8001/api
 ```
 
@@ -627,9 +627,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   
   **Fill Government Forms With Confidence**
   
-  [Website](https://formaid.preview.emergentagent.com) • 
-  [Demo](https://formaid.preview.emergentagent.com/demo) • 
-  [Download](https://formaid.preview.emergentagent.com/api/extension/download) • 
+  [Website](https://formwise-demo.preview.emergentagent.com) • 
+  [Demo](https://formwise-demo.preview.emergentagent.com/demo) • 
+  [Download](https://formwise-demo.preview.emergentagent.com/api/extension/download) • 
   [Report Bug](https://github.com/yourorg/formwise/issues) • 
   [Request Feature](https://github.com/yourorg/formwise/issues)
   

@@ -1,4 +1,4 @@
-// Government Form Helper - Content Script
+// FormWise - Content Script
 // Real-time DOM detection for Passport Seva and government forms
 
 (function() {
@@ -31,7 +31,7 @@
   let debounceTimer = null;
 
   function init() {
-    console.log('Form Helper: Initializing real-time DOM detection...');
+    console.log('FormWise: Initializing real-time DOM detection...');
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', setup);
     } else {
@@ -43,7 +43,7 @@
     createHelperPanel();
     attachGlobalListeners();
     loadChatHistory();
-    console.log('Form Helper: Ready - click any form field or use chat');
+    console.log('FormWise: Ready - click any form field or use chat');
   }
 
   // Load chat history from storage
@@ -154,11 +154,11 @@
     const fieldInfo = extractFieldInfoFromDOM(element);
     
     if (!fieldInfo.question || fieldInfo.question.length < 3) {
-      console.log('Form Helper: Could not detect question for field');
+      console.log('FormWise: Could not detect question for field');
       return;
     }
     
-    console.log('Form Helper: Detected -', fieldInfo);
+    console.log('FormWise: Detected -', fieldInfo);
     
     state.activeField = fieldInfo.question;
     state.activeElement = element;
@@ -192,7 +192,7 @@
         state.error = response.error || 'Failed to get guidance';
       }
     } catch (error) {
-      console.error('Form Helper: API Error', error);
+      console.error('FormWise: API Error', error);
       state.error = 'Unable to connect to AI service';
     }
     
@@ -729,7 +729,7 @@
       <div class="gov-helper-header">
         <div class="gov-helper-header-content">
           <div class="gov-helper-logo">
-            <img src="https://customer-assets.emergentagent.com/job_83598f23-6b56-44de-be74-03f8fb373d2d/artifacts/lk25akgm_Gemini_Generated_Image_ba6fpgba6fpgba6f-removebg-preview.png" alt="FormWise Logo" width="32" height="32" style="object-fit: contain;">
+            <img src="${chrome.runtime.getURL('icons/logo.png')}" alt="FormWise Logo" width="32" height="32" style="object-fit: contain;">
           </div>
           <div>
             <h3 class="gov-helper-title">FormWise</h3>

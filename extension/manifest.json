@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "FormWise",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "AI-powered assistant for filling Indian government forms like Passport Seva",
   "permissions": [
     "activeTab",
@@ -10,7 +10,13 @@
   "host_permissions": [
     "*://*.passportindia.gov.in/*",
     "*://services1.passportindia.gov.in/*",
-    "https://formaid.preview.emergentagent.com/*"
+    "https://formwise-demo.preview.emergentagent.com/*"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/logo.png"],
+      "matches": ["*://*.passportindia.gov.in/*"]
+    }
   ],
   "background": {
     "service_worker": "background.js"

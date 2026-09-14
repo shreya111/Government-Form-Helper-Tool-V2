@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 class GovernmentFormHelperTester:
-    def __init__(self, base_url="https://formaid.preview.emergentagent.com"):
+    def __init__(self, base_url="https://formwise-demo.preview.emergentagent.com"):
         self.base_url = base_url
         self.api_url = f"{base_url}/api"
         self.tests_run = 0
@@ -81,7 +81,7 @@ class GovernmentFormHelperTester:
                 try:
                     error_data = response.json()
                     details += f", Error: {error_data}"
-                except:
+                except ValueError:
                     details += f", Response: {response.text[:200]}"
             
             self.log_test("Form Help Endpoint", success, details)
@@ -129,32 +129,16 @@ class GovernmentFormHelperTester:
             self.log_test("ECR/ECNR Field Guidance", False, str(e))
             return False
 
-    def test_status_endpoints(self):
-        """Test status check endpoints"""
+    def test_extension_download(self):
+        """Test extension zip download endpoint"""
         try:
-            # Test POST status
-            payload = {"client_name": "test_client"}
-            response = requests.post(
-                f"{self.api_url}/status",
-                json=payload,
-                headers={'Content-Type': 'application/json'},
-                timeout=10
-            )
-            
-            post_success = response.status_code == 200
-            details = f"POST Status: {response.status_code}"
-            
-            # Test GET status
-            get_response = requests.get(f"{self.api_url}/status", timeout=10)
-            get_success = get_response.status_code == 200
-            details += f", GET Status: {get_response.status_code}"
-            
-            overall_success = post_success and get_success
-            self.log_test("Status Endpoints", overall_success, details)
-            return overall_success
-            
+            response = requests.get(f"{self.api_url}/extension/download", timeout=10)
+            success = response.status_code == 200 and response.headers.get('content-type', '').startswith('application/zip')
+            details = f"Status: {response.status_code}, Size: {len(response.content)} bytes"
+            self.log_test("Extension Download", success, details)
+            return success
         except Exception as e:
-            self.log_test("Status Endpoints", False, str(e))
+            self.log_test("Extension Download", False, str(e))
             return False
 
     def test_form_help_history(self):
@@ -177,7 +161,7 @@ class GovernmentFormHelperTester:
 
     def run_all_tests(self):
         """Run all backend tests"""
-        print("🚀 Starting Government Form Helper Backend Tests")
+        print("🚀 Starting FormWise Backend Tests")
         print(f"Testing against: {self.base_url}")
         print("=" * 60)
         
@@ -195,7 +179,7 @@ class GovernmentFormHelperTester:
         self.test_ecr_field_specific()
         
         # Test other endpoints
-        self.test_status_endpoints()
+        self.test_extension_download()
         self.test_form_help_history()
         
         # Print summary
