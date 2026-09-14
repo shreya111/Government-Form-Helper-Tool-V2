@@ -73,7 +73,7 @@
       case 'FW_READY':
         frameReady = true;
         frame.contentWindow.postMessage(
-          { source: 'formwise-content', type: 'FW_INIT', hostname: window.location.hostname },
+          { source: 'formwise-content', type: 'FW_INIT', hostname: window.location.hostname, formId: detectFormId() },
           '*'
         );
         outbox.forEach(post);
@@ -87,7 +87,17 @@
         jumpToField(msg.id);
         break;
       case 'FW_APPLY':
-        applyValue(msg.value);
+        if (lastFieldEl && document.contains(lastFieldEl)) {
+          applyValueTo(lastFieldEl, msg.value);
+          highlight(lastFieldEl);
+          scheduleProgress(200);
+        }
+        break;
+      case 'FW_GET_FORM_FIELDS':
+        post({ type: 'FW_FORM_FIELDS', requestId: msg.requestId, fields: collectFormFields() });
+        break;
+      case 'FW_APPLY_BATCH':
+        post({ type: 'FW_APPLY_BATCH_RESULT', requestId: msg.requestId, ...applyBatch(msg.items || []) });
         break;
       case 'FW_GET_PAGE_CONTEXT':
         post({ type: 'FW_PAGE_CONTEXT', requestId: msg.requestId, context: extractPageContext() });
@@ -95,6 +105,10 @@
       default:
     }
   });
+
+  function detectFormId() {
+    return /passportindia\.gov\.in|mock-passport/i.test(window.location.href) ? 'passport_fresh' : 'generic';
+  }
 
   function showPanel() {
     ensureFrame();
@@ -176,38 +190,105 @@
     post({ type: 'FW_FIELD', fieldInfo: info, formContext: FORM_CONTEXT });
   }
 
-  // Apply the AI-recommended option to the real form control.
-  function applyValue(value) {
-    const el = lastFieldEl;
-    if (!el || !document.contains(el)) return;
+  // Apply a value to a real form control (AI "Apply" or document autofill). Returns true when something changed.
+  function applyValueTo(el, value) {
     const type = controlType(el);
-    const wanted = String(value);
+    const wanted = String(value == null ? '' : value).trim();
+    const lower = wanted.toLowerCase();
+    if (!wanted) return false;
+
     if (type === 'radio') {
       const group = radioGroup(el);
       const target =
-        group.find((r) => r.value === wanted) ||
-        group.find((r) => (radioLabel(r) || '').toLowerCase() === wanted.toLowerCase());
-      if (target) {
-        target.checked = true;
-        fireEvents(target);
-      }
-    } else if (type === 'checkbox') {
-      el.checked = /^(yes|true|1|on)$/i.test(wanted);
-      fireEvents(el);
-    } else if (type === 'select') {
-      const opt =
-        Array.from(el.options).find((o) => o.value === wanted) ||
-        Array.from(el.options).find((o) => o.textContent.trim() === wanted);
-      if (opt) {
-        el.value = opt.value;
-        fireEvents(el);
-      }
-    } else {
-      el.value = wanted;
-      fireEvents(el);
+        group.find((r) => r.value.toLowerCase() === lower) ||
+        group.find((r) => (radioLabel(r) || '').toLowerCase() === lower) ||
+        group.find((r) => (radioLabel(r) || '').toLowerCase().startsWith(lower) || lower.startsWith((radioLabel(r) || '').toLowerCase()));
+      if (!target) return false;
+      target.checked = true;
+      fireEvents(target);
+      return true;
     }
-    highlight(el);
+    if (type === 'checkbox') {
+      el.checked = /^(yes|true|1|on|y)$/i.test(wanted);
+      fireEvents(el);
+      return true;
+    }
+    if (type === 'select') {
+      const opts = Array.from(el.options).filter((o) => !PLACEHOLDER_VALUES.has((o.value || '').trim().toLowerCase()));
+      const text = (o) => o.textContent.trim().toLowerCase();
+      const word = (needle, hay) => new RegExp(`(^|\\W)${escapeRegExp(needle)}(\\W|$)`).test(hay);
+      const opt =
+        opts.find((o) => o.value.toLowerCase() === lower) ||
+        opts.find((o) => text(o) === lower) ||
+        opts.find((o) => text(o).startsWith(lower) || lower.startsWith(text(o))) ||
+        opts.find((o) => word(lower, text(o)) || word(text(o), lower));
+      if (!opt) return false;
+      el.value = opt.value;
+      fireEvents(el);
+      return true;
+    }
+    el.value = normaliseDate(el, wanted);
+    fireEvents(el);
+    return true;
+  }
+
+  // Date inputs want ISO; legacy text fields with a DD/MM/YYYY hint want the Indian format.
+  function normaliseDate(el, value) {
+    const dmy = value.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+    const iso = value.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const pad = (n) => String(n).padStart(2, '0');
+    if ((el.type || '').toLowerCase() === 'date') {
+      return dmy ? `${dmy[3]}-${pad(dmy[2])}-${pad(dmy[1])}` : value;
+    }
+    const hint = `${el.placeholder || ''} ${el.title || ''} ${el.name || ''} ${el.id || ''}`.toLowerCase();
+    if (iso && /dd\/mm|dob|birth|date/.test(hint)) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+    return value;
+  }
+
+  function applyBatch(items) {
+    let filled = 0;
+    let lastEl = null;
+    items.forEach(({ field_id, value }) => {
+      const el = document.querySelector(`[data-fw-id="${cssEscape(String(field_id))}"]`);
+      if (!el || !document.contains(el)) return;
+      if (applyValueTo(el, value)) {
+        filled++;
+        lastEl = el;
+        el.classList.add('formwise-filled');
+        setTimeout(() => el.classList.remove('formwise-filled'), 4000);
+      }
+    });
+    if (lastEl) {
+      lastEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      highlight(lastEl);
+    }
     scheduleProgress(200);
+    return { filled, total: items.length };
+  }
+
+  // Every visible control on the page (radio groups collapsed) as specs for the autofill mapper.
+  function collectFormFields() {
+    const seenGroups = new Set();
+    const fields = [];
+    document.querySelectorAll(CONTROL_SELECTOR).forEach((el) => {
+      if (el.closest('#formwise-frame') || !isVisible(el)) return;
+      if (el.type === 'radio' && el.name) {
+        if (seenGroups.has(el.name)) return;
+        seenGroups.add(el.name);
+      }
+      const info = extractFieldInfo(el);
+      if (!info.question) return;
+      const type = (el.type || '').toLowerCase() === 'date' ? 'date' : info.type === 'text' ? 'input' : info.type;
+      fields.push({
+        field_id: ensureId(el),
+        label: info.question,
+        type,
+        required: !!info.required,
+        section: info.section || null,
+        options: (info.options || []).map((o) => o.label),
+      });
+    });
+    return fields;
   }
 
   function fireEvents(el) {

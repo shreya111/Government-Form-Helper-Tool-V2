@@ -168,7 +168,7 @@ async def autofill_preview(body: AutofillPreviewRequest, request: Request, autho
     documents = await _source.list_documents(user.user_id)
     result = mapper.build(body.fields, documents)
     await _log_analytics("field_mapping_generated", user.user_id, {
-        "form_id": body.form_id, **result["summary"]})
+        "form_id": body.form_id, "client": body.client, **result["summary"]})
     return result
 
 
@@ -191,6 +191,6 @@ async def autofill_confirm(body: AutofillConfirmRequest, request: Request, autho
     if events:
         await _db.audit_events.insert_many(events)
     await _log_analytics("autofill_completed", user.user_id, {
-        "form_id": body.form_id, "count": len(body.mappings)})
+        "form_id": body.form_id, "client": body.client, "count": len(body.mappings)})
     return {"ok": True, "filled": len(body.mappings),
             "values": [{"field_id": m.field_id, "value": m.value} for m in body.mappings]}

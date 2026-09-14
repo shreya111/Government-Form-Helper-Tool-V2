@@ -29,8 +29,8 @@ async function build() {
 
   fs.rmSync(publicMirror, { recursive: true, force: true });
   fs.mkdirSync(publicMirror, { recursive: true });
-  // Mirror only what the browser mock page needs; keep worker/config out of the web root (and out of lint).
-  for (const item of ["content.js", "styles.css", "panel", "icons"]) {
+  // Mirror only what the browser mock page needs; keep the worker out of the web root (and out of lint).
+  for (const item of ["content.js", "config.js", "styles.css", "panel", "icons"]) {
     const src = path.join(extensionDir, item);
     if (fs.existsSync(src)) fs.cpSync(src, path.join(publicMirror, item), { recursive: true });
   }

@@ -19,6 +19,7 @@ load_dotenv(ROOT_DIR / '.env')
 
 from auth import auth_router, init_auth
 from doc_router import doc_router, init_documents
+from form_requirements import forms_router
 from storage_service import storage
 
 # MongoDB connection
@@ -354,6 +355,7 @@ async def download_extension():
 app.include_router(api_router)
 app.include_router(auth_router)
 app.include_router(doc_router)
+app.include_router(forms_router)
 
 init_auth(db)
 init_documents(db)

@@ -1,5 +1,6 @@
 """Document-intelligence data models and the field ontology used to map government-form
 labels to a stable set of concepts. Keep form/document rules here, not scattered in the UI."""
+import re
 from datetime import datetime, timezone
 from typing import Optional, List
 from pydantic import BaseModel, Field
@@ -43,15 +44,38 @@ _LABEL_KEYWORDS: list[tuple[str, str]] = [
     ("name", "full_name"),  # generic fallback, keep last
 ]
 
+# Fields about someone/something other than the applicant's own details: never autofill from documents.
+SKIP_KEYWORDS = ["guardian", "emergency", "reference", "nominee", "out of india", "previous passport", "old passport"]
+
 
 def normalize_label(label: str) -> Optional[str]:
     """Map a raw form-field label to an ontology key using keyword matching."""
     if not label:
         return None
     low = label.lower()
+    if any(kw in low for kw in SKIP_KEYWORDS):
+        return None
     for kw, key in _LABEL_KEYWORDS:
         if kw in low:
             return key
+    return None
+
+
+def match_option(value: str, options: list[str]) -> Optional[str]:
+    """Pick the form option a document value refers to (exact, then prefix, then containment)."""
+    v = (value or "").strip().lower()
+    if not v:
+        return None
+    norm = [(o, o.strip().lower()) for o in options if o and o.strip()]
+    for o, low in norm:
+        if low == v:
+            return o
+    for o, low in norm:
+        if low.startswith(v) or v.startswith(low):
+            return o
+    for o, low in norm:
+        if re.search(rf"(^|\W){re.escape(v)}(\W|$)", low) or re.search(rf"(^|\W){re.escape(low)}(\W|$)", v):
+            return o
     return None
 
 
@@ -96,6 +120,7 @@ class FormFieldSpec(BaseModel):
 
 class AutofillPreviewRequest(BaseModel):
     form_id: str = "passport_fresh"
+    client: str = "web"  # web | extension
     fields: List[FormFieldSpec]
 
 
@@ -108,4 +133,5 @@ class ConfirmMapping(BaseModel):
 
 class AutofillConfirmRequest(BaseModel):
     form_id: str = "passport_fresh"
+    client: str = "web"
     mappings: List[ConfirmMapping]

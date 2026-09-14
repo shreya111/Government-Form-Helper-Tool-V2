@@ -39,6 +39,10 @@
               chat_history: p.chatHistory || []
             }) };
           }
+          if (msg.type === 'OPEN_TAB') {
+            window.open(msg.url, '_blank', 'noopener');
+            return { success: true };
+          }
           return { success: false, error: 'Unknown message type' };
         } catch (e) {
           return { success: false, error: e.message };

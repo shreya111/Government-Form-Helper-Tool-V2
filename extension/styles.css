@@ -34,3 +34,13 @@
   background-color: rgba(16, 185, 129, 0.05) !important;
   transition: box-shadow 0.2s ease;
 }
+
+/* Fields just populated from documents flash green for a moment. */
+.formwise-filled {
+  animation: formwise-filled-flash 4s ease-out forwards;
+}
+
+@keyframes formwise-filled-flash {
+  0% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.55); background-color: rgba(16, 185, 129, 0.25); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); background-color: transparent; }
+}

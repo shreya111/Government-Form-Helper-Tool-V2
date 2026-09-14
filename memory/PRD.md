@@ -28,13 +28,21 @@ Chrome Extension (Manifest V3) + web demo that acts as a real-time AI consultant
   - App-wide sign-in: `components/AuthButton.jsx` (sign in / avatar+name / sign out) in the landing nav and demo header; verified signed-out + signed-in on desktop and mobile.
   - Env: `APP_NAME, MAX_DOCUMENT_SIZE_MB, DOCUMENT_RETENTION_HOURS, ENABLE_DOCUMENT_AUTOFILL, ENABLE_DIGILOCKER, DOC_EXTRACTION_MODEL`.
 
+- 2026-06 (session 4): **Document Autofill — Phase 2** (tested, iteration_4: backend 15/15 new + 17/17 prior, frontend 100%).
+  - **Extension sign-in + batch autofill** (packaged extension, v2.1.0): panel fetches the API directly with `credentials:'include'` (`extDocApi` in `extension-panel/index.jsx`; API base from `extension/config.js`, now `var`, loaded by `panel/index.html`). Sign-in opens a tab via `OPEN_TAB` → `chrome.tabs.create` (shim: `window.open`) to Emergent auth with redirect `/auth/extension` (`pages/ExtensionSignedIn.jsx`; `App.js` AuthCallback lands there). Panel polls `/auth/me` ("Waiting for sign-in…", `signin-check-btn`). content.js: `FW_GET_FORM_FIELDS` → `collectFormFields()` (all visible controls, radio groups collapsed, `data-fw-id`), `FW_APPLY_BATCH` → `applyBatch()`/`applyValueTo()` (case-insensitive select/radio matching, `normaliseDate` ISO↔DD/MM/YYYY, `.formwise-filled` flash), `FW_INIT.formId` via `detectFormId()`.
+  - **Form-requirement layer**: `backend/form_requirements.py` (`GET /api/forms`, `GET /api/forms/{form_id}/requirements`, en/hi purpose, priority, provides; unknown → generic). UI `panel/documents/DocRequirements.jsx` ("Documents that help this form", Uploaded/Not uploaded), shown signed-in and signed-out.
+  - **Hindi toggle**: `panel/i18n.jsx` (`LangProvider`/`useT`/`docLabel`, `fw_lang` in localStorage), EN/हिं pill in `PanelHeader`; tabs, header, footer and the whole Documents workflow localised.
+  - **Conflict cards**: `panel/documents/ConflictCard.jsx` + `ReviewScreen.jsx` — conflicted rows start unapproved, user picks a value (deduped candidates with sources + confidence) → resolved/approved.
+  - **Mapping guards** (`doc_models.py`): `SKIP_KEYWORDS` (guardian/emergency/reference/nominee/out of india/previous passport) on label or section; `match_option()` — choice fields only get values that match an option (exact → prefix → word-boundary), value rewritten to the option label.
+  - **Gated demo nudge**: `components/SignInNudge.jsx` in the form column (signed-out only, session-dismissable). **Profile menu**: `AuthButton.jsx` avatar dropdown (name, email, "My documents" → `/demo?tab=documents`, sign out); `HelperPanel initialTab`, `FormSimulator` reads `?tab=`.
+  - Analytics: preview/confirm carry `client` (web|extension). Consent stored per user (`fw_doc_consent_<user_id>`). Demo header made mobile-safe.
+  - Seed for conflict testing (mongosh, db test_database): user `user_test_conflict` / token `test_session_conflict_2026`, docs `seed-aadhaar-1` (DOB 11/10/1997) + `seed-birth-1` (DOB 11/10/1998) — see `/app/memory/test_credentials.md`.
+
 ## Phase 2 backlog (document autofill)
-- Multi-document conflict UI polish (backend + review picker already exist; add dedicated conflict cards).
-- English/Hindi UI localization layer.
-- Form-requirement layer (`FormRequirement` config: which documents help this form).
 - Docs: document-intelligence.md, autofill-architecture.md, privacy.md, security.md, future-digilocker-integration.md.
-- Extension-context auth + `FW_APPLY_BATCH` so the packaged extension can autofill from documents (Phase 1 stubbed to web demo).
-- Product metrics dashboards from analytics_events.
+- Product metrics dashboards from analytics_events (footfall: users, sign-ins, uploads, autofills by client).
+- Verify the packaged extension sign-in + document autofill on the live Passport Seva portal (mock page verified only).
+- Hindi for Field Help / Chat AI answers (prompt-level language switch).
 
 ## Backlog
 - P1: Verify on the live Passport Seva portal with the installed extension.

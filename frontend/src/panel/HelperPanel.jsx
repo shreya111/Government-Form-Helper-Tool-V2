@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { LangProvider, useT } from "./i18n";
 import { PanelHeader } from "./PanelHeader";
 import { PanelTabs } from "./PanelTabs";
 import { ProgressBar } from "./ProgressBar";
@@ -6,29 +7,12 @@ import { FieldHelpTab } from "./FieldHelpTab";
 import { ChatTab } from "./ChatTab";
 import { DocumentsTab } from "./DocumentsTab";
 
-// Single source of truth for the FormWise panel; used by the web demo and the Chrome extension iframe.
-export const HelperPanel = ({
-  embedded = false,
-  logoSrc,
-  activeField,
-  activeSection,
-  isLoading,
-  response,
-  error,
-  progress,
-  fieldOptions,
-  onApply,
-  docApi,
-  formFields,
-  formId,
-  onAutofill,
-  chatMessages,
-  onChatMessagesChange,
-  onSendChat,
-  onClose,
-  onJumpToField,
+const PanelBody = ({
+  embedded, logoSrc, activeField, activeSection, isLoading, response, error, progress, fieldOptions, onApply,
+  docApi, formFields, formId, onAutofill, chatMessages, onChatMessagesChange, onSendChat, onClose, onJumpToField, initialTab,
 }) => {
-  const [activeTab, setActiveTab] = useState("field-help");
+  const { t } = useT();
+  const [activeTab, setActiveTab] = useState(initialTab || "field-help");
 
   useEffect(() => {
     if (activeField) setActiveTab("field-help");
@@ -65,8 +49,15 @@ export const HelperPanel = ({
       )}
 
       <div className="border-t border-white/10 px-5 py-3 bg-slate-900/50">
-        <p className="text-xs text-white/30 text-center">AI-powered guidance</p>
+        <p className="text-xs text-white/30 text-center">{t("footer.note")}</p>
       </div>
     </div>
   );
 };
+
+// Single source of truth for the FormWise panel; used by the web demo and the Chrome extension iframe.
+export const HelperPanel = (props) => (
+  <LangProvider>
+    <PanelBody {...props} />
+  </LangProvider>
+);

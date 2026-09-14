@@ -22,3 +22,8 @@ print(tok);
 - `user_id` is a custom field; Mongo `_id` is separate and always projected out.
 - Backend reads session from cookie first, then Authorization Bearer.
 - No real Google account is needed for backend/UI testing via the seed above.
+
+## Seeded conflict-test session (2026-06, Phase 2)
+- user_id `user_test_conflict`, email `conflict.tester@example.com`, session_token **`test_session_conflict_2026`**
+- Has 2 processed seed documents (AADHAAR `seed-aadhaar-1` DOB 11/10/1997, BIRTH_CERTIFICATE `seed-birth-1` DOB 11/10/1998) → Date of Birth shows a conflict card in Review & Autofill.
+- Re-seed: see the mongosh snippet in `/app/memory/PRD.md` (Phase 2 section) if the TTL (24h) has expired.

@@ -13,7 +13,7 @@ import fitz  # PyMuPDF
 from PIL import Image
 from emergentintegrations.llm.chat import LlmChat, UserMessage, FileContentWithMimeType, ImageContent
 
-from doc_models import DOCUMENT_TYPES, ONTOLOGY_KEYS, normalize_label, ExtractedField
+from doc_models import DOCUMENT_TYPES, ONTOLOGY_KEYS, SKIP_KEYWORDS, normalize_label, match_option, ExtractedField
 
 logger = logging.getLogger(__name__)
 
@@ -256,8 +256,17 @@ class FieldMappingService:
 
         mappings = []
         for ff in form_fields:
-            key = normalize_label(ff.label)
+            section = (ff.section or "").lower()
+            key = None if any(kw in section for kw in SKIP_KEYWORDS) else normalize_label(ff.label)
             cands = sorted(candidates.get(key, []), key=lambda c: c["confidence"], reverse=True) if key else []
+            # choice fields: only suggest values that actually correspond to one of the form's options
+            if cands and ff.options:
+                matched = []
+                for c in cands:
+                    opt = match_option(c["value"], ff.options)
+                    if opt:
+                        matched.append({**c, "value": opt})
+                cands = matched
             if not cands:
                 mappings.append({
                     "field_id": ff.field_id, "label": ff.label, "section": ff.section,

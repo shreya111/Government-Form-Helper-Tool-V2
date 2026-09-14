@@ -1,10 +1,11 @@
 import { useState, useCallback, useRef } from "react";
 import axios from "axios";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { FileText, Download, ArrowLeft, Sparkles, Info } from "lucide-react";
 import { HelperPanel } from "../panel/HelperPanel";
 import { webDocApi } from "../lib/docApi";
 import { AuthButton } from "../components/AuthButton";
+import { SignInNudge } from "../components/SignInNudge";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -118,6 +119,8 @@ const SectionHeader = ({ title, subtitle }) => (
 );
 
 const FormSimulator = () => {
+  const [searchParams] = useSearchParams();
+  const initialTab = ["documents", "chat"].includes(searchParams.get("tab")) ? searchParams.get("tab") : "field-help";
   const [activeField, setActiveField] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [aiResponse, setAiResponse] = useState(null);
@@ -230,18 +233,18 @@ const FormSimulator = () => {
           <div className="flex items-center gap-4">
             <Link to="/" className="flex items-center gap-2 text-white/60 hover:text-white transition-colors" data-testid="back-link">
               <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm">Back</span>
+              <span className="text-sm hidden sm:inline">Back</span>
             </Link>
-            <div className="h-6 w-px bg-white/10" />
+            <div className="h-6 w-px bg-white/10 hidden sm:block" />
             <div className="flex items-center gap-3">
-              <img src={LOGO} alt="FormWise Logo" className="w-11 h-11 object-contain" />
+              <img src={LOGO} alt="FormWise Logo" className="w-11 h-11 object-contain hidden sm:block" />
               <div>
-                <h1 className="text-lg font-bold">FormWise Demo</h1>
-                <p className="text-xs text-white/50">Try the AI assistant</p>
+                <h1 className="text-base sm:text-lg font-bold whitespace-nowrap">FormWise Demo</h1>
+                <p className="text-xs text-white/50 hidden sm:block">Try the AI assistant</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <AuthButton />
             <a
               href="/mock-passport.html"
@@ -257,7 +260,7 @@ const FormSimulator = () => {
               data-testid="download-extension-btn"
             >
               <Download className="w-4 h-4" />
-              <span>Download Extension</span>
+              <span className="hidden sm:inline">Download Extension</span>
             </a>
           </div>
         </div>
@@ -282,6 +285,7 @@ const FormSimulator = () => {
 
         <div className="flex gap-6">
           <div className={`transition-[width] duration-300 ${isPanelVisible ? "w-full lg:w-[calc(100%-440px)]" : "w-full"}`}>
+            <SignInNudge />
             <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl overflow-hidden">
               <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-5 border-b border-white/10 flex items-center gap-3">
                 <FileText className="w-7 h-7 text-white/80" />
@@ -325,6 +329,7 @@ const FormSimulator = () => {
           {isPanelVisible && (
             <HelperPanel
               logoSrc={LOGO}
+              initialTab={initialTab}
               activeField={activeField?.label || null}
               activeSection={activeField?.section || null}
               isLoading={isLoading}

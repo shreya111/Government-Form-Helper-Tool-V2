@@ -18,6 +18,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
+
+  // Sign-in happens on the FormWise web origin; the session cookie is then sent by the panel's fetches.
+  if (request.type === 'OPEN_TAB' && typeof request.url === 'string' && /^https:\/\//.test(request.url)) {
+    chrome.tabs.create({ url: request.url })
+      .then(() => sendResponse({ success: true }))
+      .catch(error => sendResponse({ success: false, error: error.message }));
+    return true;
+  }
 });
 
 async function fetchFormHelp(payload) {
