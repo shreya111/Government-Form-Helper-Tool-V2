@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link, useSearchParams } from "react-router-dom";
 import { FileText, Download, ArrowLeft, Sparkles, Info } from "lucide-react";
 import { HelperPanel } from "../panel/HelperPanel";
+import { readLang } from "../panel/i18n";
 import { webDocApi } from "../lib/docApi";
 import { AuthButton } from "../components/AuthButton";
 import { SignInNudge } from "../components/SignInNudge";
@@ -150,6 +151,7 @@ const FormSimulator = () => {
           section_context: field.section,
           help_text: field.helpText || "",
           form_context: "Indian Passport Application Form",
+          language: readLang(),
         });
         setAiResponse(response.data);
       } catch (err) {
@@ -181,8 +183,16 @@ const FormSimulator = () => {
         form_data: values,
       },
       chat_history: history,
+      language: readLang(),
     });
     return resp.data.response;
+  };
+
+  // Language toggled in the panel: fetch the current field's guidance again in the new language.
+  const refetchHelp = () => {
+    if (!activeField) return;
+    lastRequestedField.current = null;
+    handleFieldFocus(activeField);
   };
 
   const jumpToField = (name) => {
@@ -330,6 +340,7 @@ const FormSimulator = () => {
             <HelperPanel
               logoSrc={LOGO}
               initialTab={initialTab}
+              onLanguageChange={refetchHelp}
               activeField={activeField?.label || null}
               activeSection={activeField?.section || null}
               isLoading={isLoading}

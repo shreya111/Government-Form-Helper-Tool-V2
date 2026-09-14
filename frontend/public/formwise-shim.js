@@ -29,14 +29,16 @@
               field_options: p.fieldOptions || '',
               section_context: p.sectionContext || '',
               help_text: p.helpText || '',
-              form_context: p.formContext || 'Indian Passport Application Form'
+              form_context: p.formContext || 'Indian Passport Application Form',
+              language: p.language || 'en'
             }) };
           }
           if (msg.type === 'SEND_CHAT_MESSAGE') {
             return { success: true, data: await call('/chat', {
               message: p.message,
               page_context: p.pageContext,
-              chat_history: p.chatHistory || []
+              chat_history: p.chatHistory || [],
+              language: p.language || 'en'
             }) };
           }
           if (msg.type === 'OPEN_TAB') {

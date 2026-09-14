@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2, AlertTriangle, Send, MessageSquare } from "lucide-react";
+import { useT } from "./i18n";
 
 export const ChatTab = ({ messages = [], onMessagesChange, onSend }) => {
+  const { t } = useT();
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -24,7 +26,7 @@ export const ChatTab = ({ messages = [], onMessagesChange, onSend }) => {
       onMessagesChange([...next, { role: "assistant", content: reply }]);
     } catch (err) {
       console.error("Chat error:", err);
-      setError("Unable to get response. Please try again.");
+      setError(t("chat.error"));
     } finally {
       setLoading(false);
     }
@@ -45,10 +47,8 @@ export const ChatTab = ({ messages = [], onMessagesChange, onSend }) => {
             <div className="bg-white/5 p-5 rounded-2xl mb-4">
               <MessageSquare className="w-10 h-10 text-white/30" />
             </div>
-            <h4 className="text-lg font-bold text-white mb-2">Ask Me Anything!</h4>
-            <p className="text-sm text-white/50 max-w-[280px]">
-              I can help you with questions about this form, required documents, eligibility, or any confusing terms.
-            </p>
+            <h4 className="text-lg font-bold text-white mb-2">{t("chat.title")}</h4>
+            <p className="text-sm text-white/50 max-w-[280px]">{t("chat.sub")}</p>
           </div>
         ) : (
           messages.map((msg, idx) => (
@@ -70,7 +70,7 @@ export const ChatTab = ({ messages = [], onMessagesChange, onSend }) => {
           <div className="flex justify-start" data-testid="chat-loading">
             <div className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10 rounded-bl-sm flex items-center gap-2">
               <Loader2 className="w-4 h-4 text-emerald-400 animate-spin" />
-              <span className="text-sm text-white/60">Thinking...</span>
+              <span className="text-sm text-white/60">{t("chat.thinking")}</span>
             </div>
           </div>
         )}
@@ -87,7 +87,7 @@ export const ChatTab = ({ messages = [], onMessagesChange, onSend }) => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={onKeyDown}
-          placeholder="Ask about the form..."
+          placeholder={t("chat.placeholder")}
           rows={1}
           style={{ maxHeight: "120px" }}
           data-testid="chat-input"

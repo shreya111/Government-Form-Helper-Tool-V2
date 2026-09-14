@@ -7,12 +7,13 @@ import { useT, docLabel } from "./i18n";
 import { ConfidenceBadge, StatusPill, Empty, PrimaryButton, confidenceLevel } from "./documents/shared";
 import { DocRequirements } from "./documents/DocRequirements";
 import { ReviewScreen } from "./documents/ReviewScreen";
+import { UploadHints } from "./documents/UploadHints";
 
 const consentKey = (user) => `fw_doc_consent_${user?.user_id || "anon"}`;
 const POLL_MS = 2500;
 const POLL_MAX_MS = 3 * 60 * 1000;
 
-export const DocumentsTab = ({ docApi, formFields = [], formId = "passport_fresh", onAutofill }) => {
+export const DocumentsTab = ({ docApi, formFields = [], formId = "passport_fresh", onAutofill, onPreview }) => {
   const { t } = useT();
   const [user, setUser] = useState(undefined); // undefined=loading, null=signed out
   const [waiting, setWaiting] = useState(false); // sign-in opened in another tab; polling for the session
@@ -103,6 +104,7 @@ export const DocumentsTab = ({ docApi, formFields = [], formId = "passport_fresh
       if (!fields?.length) { setError(t("error.nofields")); return; }
       const data = await docApi.autofillPreview(formId, fields);
       setPreview(data);
+      onPreview?.(data);
       setRows(
         data.mappings
           .filter((m) => m.status === "suggested")
@@ -213,6 +215,7 @@ export const DocumentsTab = ({ docApi, formFields = [], formId = "passport_fresh
           {result.needed > 0 && <p className="text-xs text-amber-300 mt-1">⚠ {t("result.needed", { n: result.needed })}</p>}
         </div>
       )}
+      {result && <UploadHints hints={preview?.summary?.upload_hints} compact />}
 
       <DocRequirements docApi={docApi} formId={formId} docs={docs} />
 

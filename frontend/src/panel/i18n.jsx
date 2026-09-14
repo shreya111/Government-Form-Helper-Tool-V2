@@ -50,6 +50,17 @@ const STRINGS = {
     "doc.CLASS_10_CERTIFICATE": "Class 10 Certificate", "doc.ADDRESS_PROOF": "Address Proof",
     "doc.UTILITY_BILL": "Utility Bill", "doc.OTHER": "Other Document", "doc.UNKNOWN": "Unrecognised",
     "doc.DEFAULT": "Document",
+    "help.question": "Question", "help.which": "Which applies to you?", "help.select": "Select This",
+    "help.applied": "Applied to form", "help.apply": "Apply \"{label}\"", "help.analyzing": "Analyzing question...",
+    "help.errorTitle": "Something went wrong", "help.advice": "Expert Advice", "help.important": "Important",
+    "help.readyTitle": "Ready to Help!", "help.readySub": "Click on any form field to get guidance.",
+    "chat.title": "Ask Me Anything!",
+    "chat.sub": "I can help you with questions about this form, required documents, eligibility, or any confusing terms.",
+    "chat.thinking": "Thinking...", "chat.placeholder": "Ask about the form...",
+    "chat.error": "Unable to get response. Please try again.",
+    "hint.title": "What to upload next",
+    "hint.doc": "Upload {doc} to fill {n} more fields", "hint.docOne": "Upload {doc} to fill 1 more field",
+    "hint.field": "Upload your {doc} and FormWise can fill this for you.", "hint.open": "Open Documents",
   },
   hi: {
     "tab.field-help": "फ़ील्ड सहायता", "tab.documents": "दस्तावेज़", "tab.chat": "चैट",
@@ -98,21 +109,33 @@ const STRINGS = {
     "doc.CLASS_10_CERTIFICATE": "कक्षा 10 प्रमाण पत्र", "doc.ADDRESS_PROOF": "पते का प्रमाण",
     "doc.UTILITY_BILL": "यूटिलिटी बिल", "doc.OTHER": "अन्य दस्तावेज़", "doc.UNKNOWN": "अज्ञात",
     "doc.DEFAULT": "दस्तावेज़",
+    "help.question": "प्रश्न", "help.which": "आप पर क्या लागू होता है?", "help.select": "यह चुनें",
+    "help.applied": "फ़ॉर्म में लागू हो गया", "help.apply": "\"{label}\" लागू करें", "help.analyzing": "प्रश्न का विश्लेषण हो रहा है...",
+    "help.errorTitle": "कुछ गड़बड़ हो गई", "help.advice": "विशेषज्ञ सलाह", "help.important": "महत्वपूर्ण",
+    "help.readyTitle": "मदद के लिए तैयार!", "help.readySub": "मार्गदर्शन पाने के लिए किसी भी फ़ॉर्म फ़ील्ड पर क्लिक करें।",
+    "chat.title": "कुछ भी पूछें!",
+    "chat.sub": "मैं इस फ़ॉर्म, ज़रूरी दस्तावेज़ों, पात्रता या किसी भी उलझन वाले शब्द के बारे में आपकी मदद कर सकता हूँ।",
+    "chat.thinking": "सोच रहा हूँ...", "chat.placeholder": "फ़ॉर्म के बारे में पूछें...",
+    "chat.error": "उत्तर नहीं मिल सका। कृपया पुनः प्रयास करें।",
+    "hint.title": "आगे क्या अपलोड करें",
+    "hint.doc": "{n} और फ़ील्ड भरने के लिए {doc} अपलोड करें", "hint.docOne": "1 और फ़ील्ड भरने के लिए {doc} अपलोड करें",
+    "hint.field": "अपना {doc} अपलोड करें और FormWise इसे आपके लिए भर सकता है।", "hint.open": "दस्तावेज़ खोलें",
   },
 };
 
-const readLang = () => {
+export const readLang = () => {
   try { return localStorage.getItem(LANG_KEY) === "hi" ? "hi" : "en"; } catch { return "en"; }
 };
 
 const LangContext = createContext({ lang: "en", setLang: () => {}, t: (k) => k });
 
-export const LangProvider = ({ children }) => {
+export const LangProvider = ({ children, onChange }) => {
   const [lang, setLangState] = useState(readLang);
   const setLang = useCallback((l) => {
     setLangState(l);
     try { localStorage.setItem(LANG_KEY, l); } catch { /* ignore */ }
-  }, []);
+    onChange?.(l);
+  }, [onChange]);
   const t = useCallback((key, vars) => {
     let s = STRINGS[lang][key] ?? STRINGS.en[key] ?? key;
     if (vars) Object.entries(vars).forEach(([k, v]) => { s = s.replace(`{${k}}`, v); });

@@ -27,3 +27,7 @@ print(tok);
 - user_id `user_test_conflict`, email `conflict.tester@example.com`, session_token **`test_session_conflict_2026`**
 - Has 2 processed seed documents (AADHAAR `seed-aadhaar-1` DOB 11/10/1997, BIRTH_CERTIFICATE `seed-birth-1` DOB 11/10/1998) → Date of Birth shows a conflict card in Review & Autofill.
 - Re-seed: see the mongosh snippet in `/app/memory/PRD.md` (Phase 2 section) if the TTL (24h) has expired.
+
+## Admin dashboard (/admin)
+- `ADMIN_EMAILS` in backend/.env = singhaishreya33@gmail.com (owner) + conflict.tester@example.com (test admin → token `test_session_conflict_2026`).
+- Non-admin session for 403 checks: user `user_test_plain` / `plain.tester@example.com` / token **`test_session_plain_2026`**.

@@ -2,6 +2,7 @@ import { X, Sparkles, AlertTriangle } from "lucide-react";
 import { useT, docLabel } from "../i18n";
 import { ConfidenceBadge, PrimaryButton } from "./shared";
 import { ConflictCard } from "./ConflictCard";
+import { UploadHints } from "./UploadHints";
 
 // Review & approve screen: conflict cards first (must be resolved), then regular suggested rows.
 export const ReviewScreen = ({ preview, rows, setRows, onBack, onApply }) => {
@@ -58,6 +59,8 @@ export const ReviewScreen = ({ preview, rows, setRows, onBack, onApply }) => {
           <p className="text-[11px] text-white/40 mt-1">{t("review.source", { doc: docLabel(t, r.source_document_type) })}</p>
         </div>
       ))}
+
+      <UploadHints hints={preview.summary.upload_hints} />
 
       <PrimaryButton onClick={onApply} disabled={approvedCount === 0} data-testid="review-apply-btn">
         <Sparkles className="w-4 h-4" /> {t("review.apply", { n: approvedCount })}

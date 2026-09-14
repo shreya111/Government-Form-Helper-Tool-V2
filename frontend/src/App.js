@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route, useLocation, useNavigate } from "react-ro
 import LandingPage from "@/pages/LandingPage";
 import FormSimulator from "@/pages/FormSimulator";
 import ExtensionSignedIn from "@/pages/ExtensionSignedIn";
+import AdminDashboard from "@/pages/AdminDashboard";
 import { exchangeSession } from "@/lib/docApi";
 
 // Handles the Emergent Google redirect: {origin}/demo#session_id=... (web) or
@@ -43,6 +44,7 @@ function AppRouter() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/demo" element={<FormSimulator />} />
       <Route path="/auth/extension" element={<ExtensionSignedIn />} />
+      <Route path="/admin" element={<AdminDashboard />} />
     </Routes>
   );
 }

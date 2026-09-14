@@ -40,7 +40,8 @@ async function fetchFormHelp(payload) {
       field_options: payload.fieldOptions || '',
       section_context: payload.sectionContext || '',
       help_text: payload.helpText || '',
-      form_context: payload.formContext || 'Indian Passport Application Form'
+      form_context: payload.formContext || 'Indian Passport Application Form',
+      language: payload.language || 'en'
     })
   });
 
@@ -60,7 +61,8 @@ async function sendChatMessage(payload) {
     body: JSON.stringify({
       message: payload.message,
       page_context: payload.pageContext,
-      chat_history: payload.chatHistory || []
+      chat_history: payload.chatHistory || [],
+      language: payload.language || 'en'
     })
   });
 

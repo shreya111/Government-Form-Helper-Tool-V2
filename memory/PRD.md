@@ -38,11 +38,16 @@ Chrome Extension (Manifest V3) + web demo that acts as a real-time AI consultant
   - Analytics: preview/confirm carry `client` (web|extension). Consent stored per user (`fw_doc_consent_<user_id>`). Demo header made mobile-safe.
   - Seed for conflict testing (mongosh, db test_database): user `user_test_conflict` / token `test_session_conflict_2026`, docs `seed-aadhaar-1` (DOB 11/10/1997) + `seed-birth-1` (DOB 11/10/1998) — see `/app/memory/test_credentials.md`.
 
-## Phase 2 backlog (document autofill)
+- 2026-06 (session 5): **Footfall dashboard + Hindi AI answers + missing-doc prompts** (tested, iteration_5: backend 11/11 new + 32/32 regression, frontend 100%).
+  - **/admin** (`pages/AdminDashboard.jsx`, `backend/admin_router.py` `GET /api/admin/summary?days=7|14|30`): sign-ups, sign-ins, uploads & autofills per day split web/extension, field-help + chat counts. Access = `ADMIN_EMAILS` in backend/.env (owner: singhaishreya33@gmail.com; test admin conflict.tester@example.com). `/api/auth/me` returns `is_admin`; profile menu shows "Footfall dashboard" for admins. Non-admin → 403 / "Not authorised".
+  - **Hindi AI**: `language` (`en|hi`) on `/api/form-help` and `/api/chat` (HINDI_FORM_HELP / HINDI_CHAT prompt suffixes; recommendations keep the English option in quotes so Apply still matches). Hosts send `readLang()`; `HelperPanel onLanguageChange` re-fetches the current field (demo + extension). FieldHelp/Chat static strings localised.
+  - **Missing-doc prompts**: mapper adds `suggested_documents` per missing field + `summary.upload_hints` (per doc type, sorted by field_count) using the form-requirement `provides`; `UploadHints.jsx` in review + result; `FieldHelpTab` `DocHintCard` for the active unfilled field with "Open Documents". New ontology keys `aadhaar_number/pan_number/voter_id_number`; short keywords use word boundaries.
+  - Extra seed: non-admin session `test_session_plain_2026` (see test_credentials.md).
+
+## Backlog (document autofill / product)
+- Live Portal Check: tune detection/autofill against real Passport Seva HTML snippets (user to paste) — mock page verified only.
 - Docs: document-intelligence.md, autofill-architecture.md, privacy.md, security.md, future-digilocker-integration.md.
-- Product metrics dashboards from analytics_events (footfall: users, sign-ins, uploads, autofills by client).
-- Verify the packaged extension sign-in + document autofill on the live Passport Seva portal (mock page verified only).
-- Hindi for Field Help / Chat AI answers (prompt-level language switch).
+- Admin: rename `totals.users` → `total_users`; optional CSV export / date picker.
 
 ## Backlog
 - P1: Verify on the live Passport Seva portal with the installed extension.

@@ -8,7 +8,9 @@ import {
   CheckCircle2,
   ChevronRight,
   Wand2,
+  FileUp,
 } from "lucide-react";
+import { useT, docLabel } from "./i18n";
 
 const Card = ({ tone, Icon, title, children, testId }) => {
   const tones = {
@@ -54,6 +56,7 @@ const matchOption = (recommendation, options) => {
 };
 
 const OptionsCard = ({ response, fieldOptions, onApply }) => {
+  const { t } = useT();
   const [selected, setSelected] = useState(null);
   const [applied, setApplied] = useState(null);
   useEffect(() => {
@@ -70,7 +73,7 @@ const OptionsCard = ({ response, fieldOptions, onApply }) => {
   };
 
   return (
-    <Card tone="emerald" Icon={MessageCircleQuestion} title="Which applies to you?" testId="options-card">
+    <Card tone="emerald" Icon={MessageCircleQuestion} title={t("help.which")} testId="options-card">
       <p className="text-sm text-white/70 mb-4">{response.clarification_question}</p>
       <div className="space-y-2">
         {response.question_options.map((opt, idx) => {
@@ -99,7 +102,7 @@ const OptionsCard = ({ response, fieldOptions, onApply }) => {
               <ChevronRight className="w-4 h-4 text-white" />
             </div>
             <div>
-              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">Select This</span>
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider">{t("help.select")}</span>
               <p className="text-sm font-semibold text-white mt-1">{selected.recommendation}</p>
             </div>
           </div>
@@ -116,11 +119,11 @@ const OptionsCard = ({ response, fieldOptions, onApply }) => {
             >
               {applied === matched.value ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4" /> Applied to form
+                  <CheckCircle2 className="w-4 h-4" /> {t("help.applied")}
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-4 h-4" /> Apply "{matched.label}"
+                  <Wand2 className="w-4 h-4" /> {t("help.apply", { label: matched.label })}
                 </>
               )}
             </button>
@@ -131,24 +134,44 @@ const OptionsCard = ({ response, fieldOptions, onApply }) => {
   );
 };
 
-export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, error, fieldOptions, onApply }) => (
+const DocHintCard = ({ docs, onOpenDocuments }) => {
+  const { t } = useT();
+  const names = docs.map((d) => docLabel(t, d)).join(" / ");
+  return (
+    <div className="border border-blue-500/25 bg-blue-500/10 rounded-2xl p-4 flex items-start gap-3" data-testid="doc-hint-card">
+      <div className="bg-blue-500/20 p-2 rounded-lg"><FileUp className="w-4 h-4 text-blue-300" /></div>
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-white/80" data-testid="doc-hint-text">{t("hint.field", { doc: names })}</p>
+        <button onClick={onOpenDocuments} data-testid="doc-hint-open-btn"
+          className="mt-2 text-xs font-semibold text-blue-300 hover:text-blue-200 flex items-center gap-1">
+          {t("hint.open")} <ChevronRight className="w-3 h-3" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, error, fieldOptions, onApply, docHint, onOpenDocuments }) => {
+  const { t } = useT();
+  return (
   <>
     {activeField && (
       <div className="bg-gradient-to-r from-blue-500/10 to-emerald-500/10 border-b border-white/10 px-5 py-3">
         <div className="flex items-center justify-between mb-1">
-          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Question</p>
+          <p className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">{t("help.question")}</p>
           {activeSection && <p className="text-xs text-white/40 truncate max-w-[55%]" data-testid="panel-section">{activeSection}</p>}
         </div>
         <p className="text-sm font-medium text-white" data-testid="panel-question">{activeField}</p>
       </div>
     )}
 
-    <div className="flex-1 overflow-y-auto p-5">
+    <div className="flex-1 overflow-y-auto p-5 space-y-4">
+      {activeField && docHint && <DocHintCard docs={docHint} onOpenDocuments={onOpenDocuments} />}
       {isLoading ? (
         <div className="space-y-4" data-testid="panel-loading">
           <div className="flex items-center gap-3 mb-4">
             <Loader2 className="w-5 h-5 text-emerald-400 animate-spin" />
-            <span className="text-sm text-white/60">Analyzing question...</span>
+            <span className="text-sm text-white/60">{t("help.analyzing")}</span>
           </div>
           <div className="h-24 bg-white/5 rounded-xl animate-pulse" />
           <div className="h-20 bg-white/5 rounded-xl animate-pulse" />
@@ -158,7 +181,7 @@ export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, 
           <div className="bg-red-500/10 p-4 rounded-2xl mb-4">
             <AlertTriangle className="w-10 h-10 text-red-400" />
           </div>
-          <h4 className="text-lg font-bold text-white mb-2">Something went wrong</h4>
+          <h4 className="text-lg font-bold text-white mb-2">{t("help.errorTitle")}</h4>
           <p className="text-sm text-white/50">{error}</p>
         </div>
       ) : response ? (
@@ -166,12 +189,12 @@ export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, 
           {response.needs_interaction && response.question_options?.length > 0 ? (
             <OptionsCard response={response} fieldOptions={fieldOptions} onApply={onApply} />
           ) : (
-            <Card tone="blue" Icon={Lightbulb} title="Expert Advice" testId="advice-card">
+            <Card tone="blue" Icon={Lightbulb} title={t("help.advice")} testId="advice-card">
               <p className="text-sm text-white/70 leading-relaxed">{response.advice}</p>
             </Card>
           )}
           {response.warning && (
-            <Card tone="amber" Icon={AlertTriangle} title="Important" testId="warning-card">
+            <Card tone="amber" Icon={AlertTriangle} title={t("help.important")} testId="warning-card">
               <p className="text-sm text-white/70">{response.warning}</p>
             </Card>
           )}
@@ -181,10 +204,11 @@ export const FieldHelpTab = ({ activeField, activeSection, isLoading, response, 
           <div className="bg-white/5 p-5 rounded-2xl mb-5">
             <Bot className="w-12 h-12 text-white/30" />
           </div>
-          <h4 className="text-lg font-bold text-white mb-2">Ready to Help!</h4>
-          <p className="text-sm text-white/50 max-w-[240px]">Click on any form field to get guidance.</p>
+          <h4 className="text-lg font-bold text-white mb-2">{t("help.readyTitle")}</h4>
+          <p className="text-sm text-white/50 max-w-[240px]">{t("help.readySub")}</p>
         </div>
       )}
     </div>
   </>
-);
+  );
+};

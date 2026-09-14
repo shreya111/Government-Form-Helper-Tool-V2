@@ -7,16 +7,22 @@ import { FieldHelpTab } from "./FieldHelpTab";
 import { ChatTab } from "./ChatTab";
 import { DocumentsTab } from "./DocumentsTab";
 
+const normLabel = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9\u0900-\u097F]+/g, " ").trim();
+
 const PanelBody = ({
   embedded, logoSrc, activeField, activeSection, isLoading, response, error, progress, fieldOptions, onApply,
   docApi, formFields, formId, onAutofill, chatMessages, onChatMessagesChange, onSendChat, onClose, onJumpToField, initialTab,
 }) => {
   const { t } = useT();
   const [activeTab, setActiveTab] = useState(initialTab || "field-help");
+  const [preview, setPreview] = useState(null); // last autofill preview → per-field "upload X" hints
 
   useEffect(() => {
     if (activeField) setActiveTab("field-help");
   }, [activeField]);
+
+  const missing = preview?.mappings?.find((m) => m.status === "missing" && normLabel(m.label) === normLabel(activeField));
+  const docHint = missing?.suggested_documents?.length ? missing.suggested_documents : null;
 
   const shell = embedded
     ? "w-full h-full bg-slate-900"
@@ -37,9 +43,11 @@ const PanelBody = ({
           error={error}
           fieldOptions={fieldOptions}
           onApply={onApply}
+          docHint={docHint}
+          onOpenDocuments={() => setActiveTab("documents")}
         />
       ) : activeTab === "documents" ? (
-        <DocumentsTab docApi={docApi} formFields={formFields} formId={formId} onAutofill={onAutofill} />
+        <DocumentsTab docApi={docApi} formFields={formFields} formId={formId} onAutofill={onAutofill} onPreview={setPreview} />
       ) : (
         <ChatTab
           messages={chatMessages}
@@ -56,8 +64,8 @@ const PanelBody = ({
 };
 
 // Single source of truth for the FormWise panel; used by the web demo and the Chrome extension iframe.
-export const HelperPanel = (props) => (
-  <LangProvider>
+export const HelperPanel = ({ onLanguageChange, ...props }) => (
+  <LangProvider onChange={onLanguageChange}>
     <PanelBody {...props} />
   </LangProvider>
 );

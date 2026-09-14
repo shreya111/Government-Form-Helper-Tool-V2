@@ -237,12 +237,14 @@ class FieldMappingService:
     """Maps government form fields to approved extracted document fields via the ontology.
     Detects cross-document value conflicts and surfaces them (never auto-resolves)."""
 
-    def build(self, form_fields: list, documents: list) -> dict:
+    def build(self, form_fields: list, documents: list, requirements: dict | None = None) -> dict:
         # collect candidates per ontology key from all processed documents
         candidates: dict[str, list] = {}
+        uploaded_types = set()
         for doc in documents:
             if doc.get("processing_status") != "processed":
                 continue
+            uploaded_types.add(doc.get("document_type"))
             for f in doc.get("fields", []):
                 key = f.get("normalization_key")
                 if not key or not f.get("value"):
@@ -274,6 +276,7 @@ class FieldMappingService:
                     "confidence_level": "low", "status": "missing",
                     "source_document_id": None, "source_document_type": None,
                     "alternatives": [], "conflict": False,
+                    "suggested_documents": _suggest_documents(key, requirements, uploaded_types),
                 })
                 continue
             best = cands[0]
@@ -298,8 +301,32 @@ class FieldMappingService:
                 "suggested": len(suggested),
                 "missing": len(mappings) - len(suggested),
                 "conflicts": len([m for m in suggested if m["conflict"]]),
+                "upload_hints": _upload_hints(mappings, requirements),
             },
         }
+
+
+def _suggest_documents(key, requirements, uploaded_types) -> list:
+    """Document types (not yet uploaded) that would provide this ontology key for the form."""
+    if not key or not requirements:
+        return []
+    return [d["document_type"] for d in requirements.get("documents", [])
+            if key in d.get("provides", []) and d["document_type"] not in uploaded_types]
+
+
+def _upload_hints(mappings, requirements) -> list:
+    """'Upload Aadhaar to fill 5 more fields' — aggregated per document type, most useful first."""
+    per_doc: dict[str, list] = {}
+    for m in mappings:
+        if m["status"] != "missing":
+            continue
+        for t in m.get("suggested_documents", []):
+            per_doc.setdefault(t, []).append(m["label"])
+    priority = {d["document_type"]: d["priority"] for d in (requirements or {}).get("documents", [])}
+    hints = [{"document_type": t, "priority": priority.get(t, "optional"), "field_count": len(labels), "labels": labels}
+             for t, labels in per_doc.items()]
+    hints.sort(key=lambda h: (-h["field_count"], h["priority"] != "recommended"))
+    return hints
 
 
 mapper = FieldMappingService()

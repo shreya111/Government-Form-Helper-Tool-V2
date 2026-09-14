@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { LogIn, LogOut, Loader2, FileText, ChevronDown } from "lucide-react";
+import { LogIn, LogOut, Loader2, FileText, ChevronDown, BarChart3 } from "lucide-react";
 import { webDocApi } from "../lib/docApi";
 import { useUser } from "../lib/useUser";
 import {
@@ -63,6 +63,12 @@ export const AuthButton = () => {
           className="gap-2 rounded-lg cursor-pointer text-white/80 focus:bg-white/10 focus:text-white">
           <FileText className="w-4 h-4" /> My documents
         </DropdownMenuItem>
+        {user.is_admin && (
+          <DropdownMenuItem onSelect={() => navigate("/admin")} data-testid="profile-admin-link"
+            className="gap-2 rounded-lg cursor-pointer text-white/80 focus:bg-white/10 focus:text-white">
+            <BarChart3 className="w-4 h-4" /> Footfall dashboard
+          </DropdownMenuItem>
+        )}
         <DropdownMenuItem onSelect={async () => { await webDocApi.logout(); setUser(null); }} data-testid="signout-btn"
           className="gap-2 rounded-lg cursor-pointer text-white/80 focus:bg-white/10 focus:text-white">
           <LogOut className="w-4 h-4" /> Sign out

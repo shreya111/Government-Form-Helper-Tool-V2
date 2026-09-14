@@ -3,6 +3,7 @@ API is scoped to the authenticated user_id. See /app/auth_testing.md for the tes
 
 REMINDER: DO NOT HARDCODE THE URL, OR ADD ANY FALLBACKS OR REDIRECT URLS, THIS BREAKS THE AUTH
 """
+import os
 import uuid
 import logging
 from datetime import datetime, timezone, timedelta
@@ -18,6 +19,11 @@ SESSION_DAYS = 7
 
 auth_router = APIRouter(prefix="/api/auth")
 _db = None
+
+
+def is_admin(email: str) -> bool:
+    allowed = {e.strip().lower() for e in os.environ.get("ADMIN_EMAILS", "").split(",") if e.strip()}
+    return bool(email) and email.lower() in allowed
 
 
 def init_auth(db):
@@ -114,7 +120,7 @@ async def create_session(response: Response, x_session_id: str = Header(None)):
 @auth_router.get("/me")
 async def me(request: Request, authorization: str = Header(None)):
     user = await get_current_user(request, authorization)
-    return user.model_dump()
+    return {**user.model_dump(), "is_admin": is_admin(user.email)}
 
 
 @auth_router.post("/logout")

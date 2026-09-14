@@ -19,7 +19,8 @@ load_dotenv(ROOT_DIR / '.env')
 
 from auth import auth_router, init_auth
 from doc_router import doc_router, init_documents
-from form_requirements import forms_router
+from form_requirements import forms_router, get_requirements
+from admin_router import admin_router, init_admin
 from storage_service import storage
 
 # MongoDB connection
@@ -48,6 +49,7 @@ class FormHelpRequest(BaseModel):
     section_context: Optional[str] = ""
     help_text: Optional[str] = ""
     form_context: Optional[str] = "Indian Passport Application Form"
+    language: Optional[str] = "en"  # en | hi
 
 class QuestionOption(BaseModel):
     label: str
@@ -86,13 +88,26 @@ class ChatRequest(BaseModel):
     message: str
     page_context: PageContext
     chat_history: List[ChatMessage] = []
+    language: Optional[str] = "en"  # en | hi
 
 class ChatResponse(BaseModel):
     response: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+HINDI_FORM_HELP = """
+
+LANGUAGE: Write clarification_question, every option "label", advice and warning in simple Hindi (Devanagari script).
+Keep the JSON keys and each option "value" in English. Inside "recommendation", keep the quoted form option exactly as it
+appears on the form in English (e.g. Select 'Yes'), with the rest of the sentence in Hindi (e.g. 'Yes' चुनें)."""
+
+HINDI_CHAT = """
+
+LANGUAGE: Reply in simple, friendly Hindi (Devanagari script). Keep form field names, option names and document names
+that appear on the page in English inside quotes so the user can find them on the form."""
+
+
 # LLM Chat setup
-def get_llm_chat(session_id: str) -> LlmChat:
+def get_llm_chat(session_id: str, language: str = "en") -> LlmChat:
     api_key = os.environ.get('EMERGENT_LLM_KEY')
     if not api_key:
         raise ValueError("EMERGENT_LLM_KEY not found in environment variables")
@@ -121,6 +136,8 @@ Examples:
 - For "Employment Type" dropdown → Ask about current occupation → Recommend appropriate option
 
 Always return valid JSON only, no markdown."""
+    if language == "hi":
+        system_message += HINDI_FORM_HELP
     
     chat = LlmChat(
         api_key=api_key,
@@ -140,7 +157,7 @@ async def get_form_help(request: FormHelpRequest):
     """Get AI-powered guidance for a specific form field."""
     try:
         session_id = f"form-helper-{uuid.uuid4()}"
-        chat = get_llm_chat(session_id)
+        chat = get_llm_chat(session_id, request.language or "en")
         
         # Build prompt with detected options if available
         options_info = ""
@@ -263,6 +280,8 @@ Use the page context to give accurate, specific answers. Reference specific sect
 Be concise, helpful, and friendly. If you don't see information on the page about their question, tell them clearly.
 
 Always prioritize accuracy and cite information from official sources when possible."""
+        if request.language == "hi":
+            system_message += HINDI_CHAT
 
         # Create chat instance
         api_key = os.environ.get('EMERGENT_LLM_KEY')
@@ -356,9 +375,11 @@ app.include_router(api_router)
 app.include_router(auth_router)
 app.include_router(doc_router)
 app.include_router(forms_router)
+app.include_router(admin_router)
 
 init_auth(db)
 init_documents(db)
+init_admin(db)
 
 
 @app.on_event("startup")

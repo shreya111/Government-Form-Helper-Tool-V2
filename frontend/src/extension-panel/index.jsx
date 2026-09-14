@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { HelperPanel } from "../panel/HelperPanel";
+import { readLang } from "../panel/i18n";
 import "./panel.css";
 
 // Real extension: chrome.runtime.id exists. Mock page: fall back to the dev shim on the parent window.
@@ -109,10 +110,12 @@ const ExtensionPanel = () => {
   const [formId, setFormId] = useState("passport_fresh");
   const hostname = useRef("");
   const requestSeq = useRef(0);
+  const lastField = useRef(null);
 
   const storageKey = () => `chat_${hostname.current}`;
 
   const fetchHelp = useCallback(async (info, formContext) => {
+    lastField.current = { info, formContext };
     const seq = ++requestSeq.current;
     setField(info);
     setIsLoading(true);
@@ -128,6 +131,7 @@ const ExtensionPanel = () => {
           sectionContext: info.section || "",
           helpText: info.helpText || "",
           formContext,
+          language: readLang(),
         },
       });
       if (seq !== requestSeq.current) return;
@@ -183,7 +187,7 @@ const ExtensionPanel = () => {
     const pageContext = await request("FW_GET_PAGE_CONTEXT", {}, 1500, {});
     const res = await ext().runtime.sendMessage({
       type: "SEND_CHAT_MESSAGE",
-      payload: { message, pageContext, chatHistory: history },
+      payload: { message, pageContext, chatHistory: history, language: readLang() },
     });
     if (!res?.success) throw new Error(res?.error || "Chat failed");
     return res.data.response;
@@ -200,6 +204,7 @@ const ExtensionPanel = () => {
     <HelperPanel
       embedded
       logoSrc="../icons/logo.png"
+      onLanguageChange={() => lastField.current && fetchHelp(lastField.current.info, lastField.current.formContext)}
       activeField={field?.question || null}
       activeSection={field?.section || null}
       isLoading={isLoading}

@@ -17,6 +17,7 @@ ONTOLOGY_KEYS = [
     "address", "house_number", "street", "city", "district", "state", "pincode",
     "mobile_number", "email", "father_name", "mother_name", "spouse_name",
     "nationality", "document_number", "place_of_birth", "marital_status",
+    "aadhaar_number", "pan_number", "voter_id_number",
 ]
 
 # form-label keyword -> ontology key (ordered: most specific first)
@@ -40,6 +41,8 @@ _LABEL_KEYWORDS: list[tuple[str, str]] = [
     ("state", "state"),
     ("nationality", "nationality"),
     ("passport number", "document_number"), ("document number", "document_number"),
+    ("aadhaar", "aadhaar_number"), ("aadhar", "aadhaar_number"), ("uid", "aadhaar_number"),
+    ("pan", "pan_number"), ("voter", "voter_id_number"), ("epic", "voter_id_number"),
     ("address", "address"), ("residential", "address"),
     ("name", "full_name"),  # generic fallback, keep last
 ]
@@ -56,7 +59,8 @@ def normalize_label(label: str) -> Optional[str]:
     if any(kw in low for kw in SKIP_KEYWORDS):
         return None
     for kw, key in _LABEL_KEYWORDS:
-        if kw in low:
+        hit = re.search(rf"\b{re.escape(kw)}\b", low) if len(kw) <= 4 else kw in low
+        if hit:
             return key
     return None
 

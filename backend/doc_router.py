@@ -15,6 +15,7 @@ from doc_models import Document, AutofillPreviewRequest, AutofillConfirmRequest,
 from doc_services import (
     validate_document, ValidationError, ManualUploadSource, extractor, mapper,
 )
+from form_requirements import get_requirements
 
 logger = logging.getLogger(__name__)
 doc_router = APIRouter(prefix="/api")
@@ -166,9 +167,10 @@ async def delete_document(document_id: str, request: Request, authorization: str
 async def autofill_preview(body: AutofillPreviewRequest, request: Request, authorization: str = Header(None)):
     user = await get_current_user(request, authorization)
     documents = await _source.list_documents(user.user_id)
-    result = mapper.build(body.fields, documents)
+    result = mapper.build(body.fields, documents, get_requirements(body.form_id))
     await _log_analytics("field_mapping_generated", user.user_id, {
-        "form_id": body.form_id, "client": body.client, **result["summary"]})
+        "form_id": body.form_id, "client": body.client,
+        **{k: v for k, v in result["summary"].items() if k != "upload_hints"}})
     return result
 
 
